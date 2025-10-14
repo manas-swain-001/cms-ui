@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getCurrentStatus } from 'api/attendance';
+import { useGlobalContext } from 'context';
+import constants from 'constant';
 
-const officeLocation = {
-    latitude: 20.332544,
-    longitude: 85.8226688,
-};
+const officeLocation = constants.officeLocation;
 
 export const useAttendanceManagement = () => {
+
     const [officeDistance, setOfficeDistance] = useState(0);
     const [formattedDistance, setFormattedDistance] = useState('0 m');
     const [gpsStatus, setGpsStatus] = useState({
@@ -14,6 +16,25 @@ export const useAttendanceManagement = () => {
         accuracy: 'unknown',
         error: null,
     });
+
+    const { userDataContext, setCurrentStatus } = useGlobalContext();
+
+    const { data: currentStatusData, refetch: refetchCurrentStatus } = useQuery({
+        queryKey: ['currentStatusData'],
+        queryFn: getCurrentStatus,
+    });
+
+    useEffect(() => {
+        if (currentStatusData) {
+            const { status = 'not_punched_in' } = currentStatusData || {};
+            console.log('currentStatusData :::: ', currentStatusData);
+            if (currentStatusData?.currentStatus) {
+                setCurrentStatus(constants.attendanceStatus[currentStatusData?.currentStatus]);
+                return;
+            }
+            setCurrentStatus(constants.attendanceStatus[status]);
+        }
+    }, [currentStatusData]);
 
     // Correct distance calculation using Haversine formula
     const calculateDistance = (officeLoc, userLoc) => {
@@ -128,5 +149,6 @@ export const useAttendanceManagement = () => {
         officeDistance, // Raw distance in meters
         formattedDistance, // Formatted string (e.g., "150 m" or "1.5 km")
         setOfficeDistance,
+        refetchCurrentStatus,
     }
 }

@@ -21,7 +21,7 @@ const AttendanceManagement = () => {
   const [activeTab, setActiveTab] = useState('punch'); // punch, calendar, history
 
 
-  const { gpsStatus, formattedDistance } = useAttendanceManagement();
+  const { gpsStatus, formattedDistance, refetchCurrentStatus } = useAttendanceManagement();
   const { currentStatus, setCurrentStatus } = useGlobalContext();
 
   // Mock attendance data
@@ -157,6 +157,7 @@ const AttendanceManagement = () => {
     onSuccess: (res) => {
       console.log('res :::: ', res);
       toast.success(res?.message || 'Punch in successful');
+      refetchCurrentStatus();
     },
     onError: (err) => {
       console.log('err :::: ', err);
@@ -170,6 +171,7 @@ const AttendanceManagement = () => {
     onSuccess: (res) => {
       console.log('res :::: ', res);
       toast.success(res?.message || 'Punch out successful');
+      refetchCurrentStatus();
     },
     onError: (err) => {
       console.log('err :::: ', err);
@@ -197,7 +199,6 @@ const AttendanceManagement = () => {
       toast.error('Invalid punch type');
     }
 
-    setCurrentStatus(punchData?.type === 'check_in' ? 'checked_in' : 'checked_out');
   };
 
   const handleSyncAction = (action) => {

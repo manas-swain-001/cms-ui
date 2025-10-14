@@ -26,10 +26,10 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
   // Mock user role hints
   const roleHints = [
     { role: 'Admin', email: 'admin@smartxalgo.com', description: 'Full system access' },
-    { role: 'Manager', email: 'manager@smartxalgo.com', description: 'Team oversight' },
+    /* { role: 'Manager', email: 'manager@smartxalgo.com', description: 'Team oversight' },
     { role: 'Developer', email: 'developer@smartxalgo.com', description: 'Task compliance' },
     { role: 'Sales', email: 'sales@smartxalgo.com', description: 'Lead management' },
-    { role: 'Field', email: 'field@smartxalgo.com', description: 'Visit tracking' }
+    { role: 'Field', email: 'field@smartxalgo.com', description: 'Visit tracking' } */
   ];
 
   const handleInputChange = (field, value) => {
@@ -75,7 +75,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
     setFormData(prev => ({
       ...prev,
       email: hint?.email,
-      password: 'demo123' // Mock password for demo
+      password: 'admin123'
     }));
   };
 
@@ -213,7 +213,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Click any role to auto-fill credentials (Password: demo123)
+          Click any role to auto-fill credentials (Password: admin123)
         </p>
       </div>
     </div>

@@ -21,11 +21,11 @@ const LoginAuthentication = () => {
 
   // Mock authentication credentials
   const mockCredentials = {
-    'admin@smartxalgo.com': { password: 'demo123', role: 'admin', name: 'System Administrator' },
-    'manager@smartxalgo.com': { password: 'demo123', role: 'manager', name: 'Team Manager' },
-    'developer@smartxalgo.com': { password: 'demo123', role: 'developer', name: 'Software Developer' },
-    'sales@smartxalgo.com': { password: 'demo123', role: 'sales', name: 'Sales Representative' },
-    'field@smartxalgo.com': { password: 'demo123', role: 'field', name: 'Field Worker' }
+    'admin@smartxalgo.com': { password: 'admin123', role: 'admin', name: 'System Administrator' },
+    'manager@smartxalgo.com': { password: 'admin123', role: 'manager', name: 'Team Manager' },
+    'developer@smartxalgo.com': { password: 'admin123', role: 'developer', name: 'Software Developer' },
+    'sales@smartxalgo.com': { password: 'admin123', role: 'sales', name: 'Sales Representative' },
+    'field@smartxalgo.com': { password: 'admin123', role: 'field', name: 'Field Worker' }
   };
 
   // Check if user is already authenticated

@@ -18,4 +18,13 @@ const punchOut = async (payload) => {
     }
 }
 
-export { punchIn, punchOut };
+const getCurrentStatus = async () => {
+    try {
+        const res = await request().get(endpoint.getCurrentStatus);
+        return res?.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { punchIn, punchOut, getCurrentStatus };

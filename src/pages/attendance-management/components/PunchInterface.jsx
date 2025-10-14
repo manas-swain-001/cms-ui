@@ -85,7 +85,7 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
     if (geofenceViolation && !violationReason?.trim()) {
       return;
     }
-
+console.log('currentStatus ---------------> :::: ', currentStatus);
     const punchData = {
       type: currentStatus === 'checked_out' ? 'check_in' : 'check_out',
       timestamp: new Date()?.toISOString(),
