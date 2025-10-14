@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import Header from '../../components/ui/Header';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import AttendanceWidget from './components/AttendanceWidget';
@@ -11,6 +10,7 @@ import SystemHealthWidget from './components/SystemHealthWidget';
 import NotificationPanel from './components/NotificationPanel';
 import QuickActionsPanel from './components/QuickActionsPanel';
 import Icon from '../../components/AppIcon';
+import Header from 'components/ui/Header';
 
 const MainDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

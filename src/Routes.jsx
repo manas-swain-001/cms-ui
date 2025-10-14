@@ -11,6 +11,7 @@ import TaskComplianceTracking from './pages/task-compliance-tracking';
 import AttendanceManagement from './pages/attendance-management';
 
 const Routes = () => {
+  
   return (
     <BrowserRouter>
       <ErrorBoundary>

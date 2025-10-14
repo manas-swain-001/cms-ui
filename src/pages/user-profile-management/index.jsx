@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../../components/ui/Header';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import ProfileInfoSection from './components/ProfileInfoSection';
@@ -10,6 +9,8 @@ import NotificationPreferencesSection from './components/NotificationPreferences
 import ThemePreferencesSection from './components/ThemePreferencesSection';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import Header from 'components/ui/Header';
+import secureStorage from 'hooks/secureStorage';
 
 const UserProfileManagement = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -153,14 +154,14 @@ const UserProfileManagement = () => {
     { id: 'theme', label: 'Theme & Appearance', icon: 'Palette' }
   ];
 
-  // Load saved preferences from localStorage
+  // Load saved preferences from secureStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem('userThemeSettings');
+    const savedTheme = secureStorage.getItem('userThemeSettings');
     if (savedTheme) {
       setThemeSettings(JSON.parse(savedTheme));
     }
 
-    const savedNotifications = localStorage.getItem('userNotificationPreferences');
+    const savedNotifications = secureStorage.getItem('userNotificationPreferences');
     if (savedNotifications) {
       setNotificationPreferences(JSON.parse(savedNotifications));
     }
@@ -222,13 +223,13 @@ const UserProfileManagement = () => {
 
   const handleUpdateNotifications = (updatedPreferences) => {
     setNotificationPreferences(updatedPreferences);
-    localStorage.setItem('userNotificationPreferences', JSON.stringify(updatedPreferences));
+    secureStorage.setItem('userNotificationPreferences', JSON.stringify(updatedPreferences));
     console.log('Notification preferences updated:', updatedPreferences);
   };
 
   const handleUpdateTheme = (updatedTheme) => {
     setThemeSettings(updatedTheme);
-    localStorage.setItem('userThemeSettings', JSON.stringify(updatedTheme));
+    secureStorage.setItem('userThemeSettings', JSON.stringify(updatedTheme));
     
     // Apply theme to document
     document.documentElement?.setAttribute('data-theme', updatedTheme?.theme);

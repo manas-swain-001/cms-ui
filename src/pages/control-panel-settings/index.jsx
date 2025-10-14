@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Header from '../../components/ui/Header';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Icon from '../../components/AppIcon';
@@ -9,6 +8,7 @@ import OfficeManagement from './components/OfficeManagement';
 import RolePermissions from './components/RolePermissions';
 import FeatureFlags from './components/FeatureFlags';
 import AuditLogs from './components/AuditLogs';
+import Header from 'components/ui/Header';
 
 const ControlPanelSettings = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

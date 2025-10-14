@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../../components/ui/Header';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import PunchInterface from './components/PunchInterface';
@@ -8,14 +7,18 @@ import AttendanceHistory from './components/AttendanceHistory';
 import SyncStatusPanel from './components/SyncStatusPanel';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import Header from 'components/ui/Header';
+import { useAttendanceManagement } from './useAttendanceManagement';
+import { useGlobalContext } from 'context';
 
 const AttendanceManagement = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentStatus, setCurrentStatus] = useState('checked_out'); // checked_in, checked_out
-  const [gpsStatus, setGpsStatus] = useState({ accuracy: 'high', latitude: 20.2961, longitude: 85.8245 });
-  const [officeDistance, setOfficeDistance] = useState(45); // meters from office
   const [activeTab, setActiveTab] = useState('punch'); // punch, calendar, history
+
+
+  const { gpsStatus, formattedDistance } = useAttendanceManagement();
+  const { currentStatus, setCurrentStatus } = useGlobalContext();
 
   // Mock attendance data
   const attendanceData = [
@@ -144,30 +147,11 @@ const AttendanceManagement = () => {
     }
   ];
 
-  // Simulate GPS updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Mock GPS accuracy changes
-      const accuracyLevels = ['high', 'medium', 'low'];
-      const randomAccuracy = accuracyLevels?.[Math.floor(Math.random() * accuracyLevels?.length)];
-      
-      // Mock distance variations
-      const baseDistance = 45;
-      const variation = Math.random() * 20 - 10; // ±10 meters
-      const newDistance = Math.max(0, Math.floor(baseDistance + variation));
-      
-      setGpsStatus(prev => ({
-        ...prev,
-        accuracy: randomAccuracy
-      }));
-      setOfficeDistance(newDistance);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const handlePunchAction = (punchData) => {
     console.log('Punch action:', punchData);
+
+
+    return;
     
     // Update current status
     setCurrentStatus(punchData?.type === 'check_in' ? 'checked_in' : 'checked_out');
@@ -269,7 +253,7 @@ const AttendanceManagement = () => {
                   onPunchAction={handlePunchAction}
                   currentStatus={currentStatus}
                   gpsStatus={gpsStatus}
-                  officeDistance={officeDistance}
+                  officeDistance={formattedDistance}
                 />
                 
                 <SyncStatusPanel onSyncAction={handleSyncAction} />
@@ -301,7 +285,7 @@ const AttendanceManagement = () => {
                   onPunchAction={handlePunchAction}
                   currentStatus={currentStatus}
                   gpsStatus={gpsStatus}
-                  officeDistance={officeDistance}
+                  officeDistance={formattedDistance}
                 />
                 <SyncStatusPanel onSyncAction={handleSyncAction} />
               </div>

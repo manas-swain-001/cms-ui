@@ -5,13 +5,17 @@ import LoginForm from './components/LoginForm';
 import BiometricPanel from './components/BiometricPanel';
 import OrganizationBranding from './components/OrganizationBranding';
 import OfflineIndicator from './components/OfflineIndicator';
+import { useMutation } from '@tanstack/react-query';
+import { login } from 'api/login';
+import secureStorage from 'hooks/secureStorage';
+import { toast } from 'react-toastify';
 
 const LoginAuthentication = () => {
   const [showBiometric, setShowBiometric] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [authStep, setAuthStep] = useState('form'); // form, biometric, processing, success
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,61 +30,42 @@ const LoginAuthentication = () => {
 
   // Check if user is already authenticated
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = secureStorage.getItem('authToken');
     if (token) {
       const from = location?.state?.from?.pathname || '/main-dashboard';
       navigate(from, { replace: true });
     }
   }, [navigate, location]);
 
-  const handleLogin = async (formData) => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const user = mockCredentials?.[formData?.email?.toLowerCase()];
-      
-      if (!user || user?.password !== formData?.password) {
-        throw new Error('Invalid email or password. Please check your credentials and try again.');
-      }
-
-      // Simulate successful authentication
-      const authData = {
-        token: 'mock-jwt-token-' + Date.now(),
-        user: {
-          id: Date.now(),
-          email: formData?.email,
-          name: user?.name,
-          role: user?.role,
-          office: formData?.office
-        },
-        expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
-      };
+  const { mutate: Login, status: LoginStatus } = useMutation({
+    mutationKey: ['updateManageUser'],
+    mutationFn: login,
+    onSuccess: (res) => {
+      const { token, user } = res || {};
 
       // Store authentication data
-      localStorage.setItem('authToken', authData?.token);
-      localStorage.setItem('userData', JSON.stringify(authData?.user));
-      
-      if (formData?.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
+      secureStorage.setItem('authToken', token);
+      secureStorage.setItem('userData', user);
 
       setAuthStep('success');
 
-      // Redirect after success animation
-      setTimeout(() => {
-        const from = location?.state?.from?.pathname || '/main-dashboard';
-        navigate(from, { replace: true });
-      }, 1000);
-
-    } catch (err) {
+      const from = location?.state?.from?.pathname || '/main-dashboard';
+      navigate(from, { replace: true });
+    },
+    onError: (err) => {
       setError(err?.message);
-    } finally {
+      toast.error(err?.message);
+    },
+    onSettled: () => {
       setIsLoading(false);
+      setError('');
     }
+  });
+
+  const handleLogin = async (formData) => {
+    setIsLoading(true);
+    setError('');
+    Login(formData);
   };
 
   const handleBiometricToggle = () => {
@@ -112,8 +97,8 @@ const LoginAuthentication = () => {
         expiresAt: Date.now() + (24 * 60 * 60 * 1000)
       };
 
-      localStorage.setItem('authToken', authData?.token);
-      localStorage.setItem('userData', JSON.stringify(authData?.user));
+      secureStorage.setItem('authToken', authData?.token);
+      secureStorage.setItem('userData', JSON.stringify(authData?.user));
 
       setAuthStep('success');
 
@@ -177,7 +162,7 @@ const LoginAuthentication = () => {
                   <h2 className="text-2xl font-bold text-foreground mb-2">Biometric Login</h2>
                   <p className="text-muted-foreground">Use your face to securely access your account</p>
                 </div>
-                
+
                 <BiometricPanel
                   isActive={showBiometric}
                   onCapture={handleBiometricCapture}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../components/ui/Header';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import TaskSlotCard from './components/TaskSlotCard';
@@ -10,6 +9,7 @@ import ComplianceStats from './components/ComplianceStats';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
+import Header from 'components/ui/Header';
 
 const TaskComplianceTracking = () => {
   const navigate = useNavigate();
