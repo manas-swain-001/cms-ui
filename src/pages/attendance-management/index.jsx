@@ -10,6 +10,10 @@ import Button from '../../components/ui/Button';
 import Header from 'components/ui/Header';
 import { useAttendanceManagement } from './useAttendanceManagement';
 import { useGlobalContext } from 'context';
+import secureStorage from 'hooks/secureStorage';
+import { useMutation } from '@tanstack/react-query';
+import { punchIn, punchOut } from 'api/attendance';
+import { toast } from 'react-toastify';
 
 const AttendanceManagement = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -147,18 +151,53 @@ const AttendanceManagement = () => {
     }
   ];
 
+  const { mutate: PunchIn } = useMutation({
+    mutationKey: ['punchIn'],
+    mutationFn: punchIn,
+    onSuccess: (res) => {
+      console.log('res :::: ', res);
+      toast.success(res?.message || 'Punch in successful');
+    },
+    onError: (err) => {
+      console.log('err :::: ', err);
+      toast.error(err?.message);
+    }
+  });
+
+  const { mutate: PunchOut } = useMutation({
+    mutationKey: ['punchOut'],
+    mutationFn: punchOut,
+    onSuccess: (res) => {
+      console.log('res :::: ', res);
+      toast.success(res?.message || 'Punch out successful');
+    },
+    onError: (err) => {
+      console.log('err :::: ', err);
+      toast.error(err?.message);
+    }
+  });
+
   const handlePunchAction = (punchData) => {
     console.log('Punch action:', punchData);
 
+    const payloadData = {
+      location: punchData?.location,
+      user: {
+        _id: secureStorage.getItem('userData')?._id,
+      }
+    }
 
-    return;
-    
-    // Update current status
+    console.log('payloadData :::: ', payloadData);
+
+    if (punchData?.type === 'check_in') {
+      PunchIn(payloadData);
+    } else if (punchData?.type === 'check_out') {
+      PunchOut(payloadData);
+    } else {
+      toast.error('Invalid punch type');
+    }
+
     setCurrentStatus(punchData?.type === 'check_in' ? 'checked_in' : 'checked_out');
-    
-    // In real app, this would sync with backend
-    // For now, just show success feedback
-    alert(`${punchData?.type === 'check_in' ? 'Check In' : 'Check Out'} successful!`);
   };
 
   const handleSyncAction = (action) => {
@@ -174,17 +213,16 @@ const AttendanceManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Sidebar 
-        isCollapsed={sidebarCollapsed} 
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
-      <main className={`pt-16 transition-all duration-300 ${
-        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
-      }`}>
+
+      <main className={`pt-16 transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+        }`}>
         <div className="p-6">
           <Breadcrumb />
-          
+
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div>
@@ -193,7 +231,7 @@ const AttendanceManagement = () => {
                 Track attendance with geofencing and biometric verification
               </p>
             </div>
-            
+
             {/* Quick Stats */}
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <div className="text-center">
@@ -216,27 +254,24 @@ const AttendanceManagement = () => {
             <div className="flex space-x-1 bg-muted p-1 rounded-lg">
               <button
                 onClick={() => setActiveTab('punch')}
-                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'punch' ?'bg-card text-foreground shadow-sm' :'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'punch' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Icon name="Clock" size={16} className="inline mr-2" />
                 Punch
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'calendar' ?'bg-card text-foreground shadow-sm' :'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'calendar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Icon name="Calendar" size={16} className="inline mr-2" />
                 Calendar
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'history' ?'bg-card text-foreground shadow-sm' :'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'history' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Icon name="History" size={16} className="inline mr-2" />
                 History
@@ -255,7 +290,7 @@ const AttendanceManagement = () => {
                   gpsStatus={gpsStatus}
                   officeDistance={formattedDistance}
                 />
-                
+
                 <SyncStatusPanel onSyncAction={handleSyncAction} />
               </div>
             </div>
@@ -268,7 +303,7 @@ const AttendanceManagement = () => {
                   selectedDate={selectedDate}
                   onDateSelect={setSelectedDate}
                 />
-                
+
                 <AttendanceHistory
                   attendanceRecords={attendanceRecords}
                   onFilterChange={handleFilterChange}
@@ -290,7 +325,7 @@ const AttendanceManagement = () => {
                 <SyncStatusPanel onSyncAction={handleSyncAction} />
               </div>
             )}
-            
+
             {activeTab === 'calendar' && (
               <AttendanceCalendar
                 attendanceData={attendanceData}
@@ -298,7 +333,7 @@ const AttendanceManagement = () => {
                 onDateSelect={setSelectedDate}
               />
             )}
-            
+
             {activeTab === 'history' && (
               <AttendanceHistory
                 attendanceRecords={attendanceRecords}

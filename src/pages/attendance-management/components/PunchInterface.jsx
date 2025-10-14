@@ -90,8 +90,8 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
       type: currentStatus === 'checked_out' ? 'check_in' : 'check_out',
       timestamp: new Date()?.toISOString(),
       location: {
-        latitude: 20.2961, // Mock coordinates for Bhubaneswar
-        longitude: 85.8245,
+        latitude: gpsStatus?.latitude, // Mock coordinates for Bhubaneswar
+        longitude: gpsStatus?.longitude,
         accuracy: gpsStatus?.accuracy
       },
       distance: officeDistance,

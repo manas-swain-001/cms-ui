@@ -1,14 +1,21 @@
-import { baseUrl } from "constant";
-import axiosInstance from "../interceptors";
 import { endpoint } from "constant/endpoint";
+import { request } from "requester";
 
 const punchIn = async (payload) => {
     try {
-        const { data } = await axiosInstance.post(`${baseUrl}${endpoint?.punchIn}`, payload);
-        return data;
+        const res = await request().post(endpoint.punchIn, payload);
+        return res;
     } catch (error) {
-        return error.message;
+        throw error;
+    }
+}
+const punchOut = async (payload) => {
+    try {
+        const res = await request().post(endpoint.punchOut, payload);
+        return res;
+    } catch (error) {
+        throw error;
     }
 }
 
-export { punchIn };
+export { punchIn, punchOut };
