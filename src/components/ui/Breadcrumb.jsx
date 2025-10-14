@@ -14,7 +14,8 @@ const Breadcrumb = () => {
     '/task-compliance-tracking': { label: 'Task Compliance', parent: '/main-dashboard' },
     '/control-panel-settings': { label: 'Administration', parent: '/main-dashboard' },
     '/user-profile-management': { label: 'Profile Settings', parent: '/main-dashboard' },
-    '/login-authentication': { label: 'Authentication', parent: null }
+    '/login-authentication': { label: 'Authentication', parent: null },
+    '/manage-employees': { label: 'Manage Employees', parent: '/main-dashboard' }
   };
 
   const generateBreadcrumbs = () => {

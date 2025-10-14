@@ -3,4 +3,8 @@ export const endpoint = {
     punchIn: "attendance/punch-in",
     punchOut: "attendance/punch-out",
     getCurrentStatus: "attendance/today",
+    users: {
+        getAllUsers: "users",
+        saveUser: "users/save",
+    }
 }

@@ -10,6 +10,7 @@ import UserProfileManagement from './pages/user-profile-management';
 import TaskComplianceTracking from './pages/task-compliance-tracking';
 import AttendanceManagement from './pages/attendance-management';
 import { ProtectedRoute } from './ProtectedRoute';
+import ManageEmployees from "pages/manage-employees";
 
 const Routes = () => {
 
@@ -19,6 +20,7 @@ const Routes = () => {
     { path: '/user-profile-management', component: <UserProfileManagement /> },
     { path: '/task-compliance-tracking', component: <TaskComplianceTracking /> },
     { path: '/attendance-management', component: <AttendanceManagement /> },
+    { path: '/manage-employees', component: <ManageEmployees /> },
   ];
 
   return (

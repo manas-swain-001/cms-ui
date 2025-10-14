@@ -83,6 +83,12 @@ const Input = React.forwardRef(({
                 </p>
             )}
 
+            {props?.generateLink && (
+                <p className="text-sm cursor-pointer text-primary float-right" onClick={props?.generateLink}>
+                    {props?.generateLinkText || ''}
+                </p>
+            )}
+
             {error && (
                 <p className="text-sm text-destructive">
                     {error}

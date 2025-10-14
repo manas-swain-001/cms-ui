@@ -47,6 +47,13 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       icon: 'User',
       roles: ['admin', 'manager', 'developer', 'sales', 'field'],
       badge: null
+    },
+    {
+      label: 'Manage Employees',
+      path: '/manage-employees',
+      icon: 'Users',
+      roles: ['admin', 'manager', 'developer', 'sales', 'field'],
+      badge: null
     }
   ];
 
