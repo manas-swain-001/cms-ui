@@ -27,7 +27,6 @@ export const useAttendanceManagement = () => {
     useEffect(() => {
         if (currentStatusData) {
             const { status = 'not_punched_in' } = currentStatusData || {};
-            console.log('currentStatusData :::: ', currentStatusData);
             if (currentStatusData?.currentStatus) {
                 setCurrentStatus(constants.attendanceStatus[currentStatusData?.currentStatus]);
                 return;

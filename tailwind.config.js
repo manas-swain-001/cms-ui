@@ -55,9 +55,9 @@ module.exports = {
           DEFAULT: 'var(--color-admin)', // violet-500
           foreground: 'var(--color-admin-foreground)' // white
         },
-        developer: {
-          DEFAULT: 'var(--color-developer)', // cyan-500
-          foreground: 'var(--color-developer-foreground)' // white
+        employee: {
+          DEFAULT: 'var(--color-employee)', // cyan-500
+          foreground: 'var(--color-employee-foreground)' // white
         },
         sales: {
           DEFAULT: 'var(--color-sales)', // emerald-500

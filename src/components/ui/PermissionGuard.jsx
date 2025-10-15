@@ -6,16 +6,16 @@ const PermissionGuard = ({ children, requiredRoles = [], fallbackPath = '/main-d
   
   // Mock user data - in real app this would come from auth context
   const user = {
-    role: 'admin', // admin, manager, developer, sales, field
+    role: 'admin', // admin, manager, employee, sales, field
     permissions: ['read', 'write', 'delete', 'admin'],
     isAuthenticated: true
   };
 
   // Role hierarchy for permission inheritance
   const roleHierarchy = {
-    admin: ['admin', 'manager', 'developer', 'sales', 'field'],
-    manager: ['manager', 'developer', 'sales', 'field'],
-    developer: ['developer'],
+    admin: ['admin', 'manager', 'employee', 'sales', 'field'],
+    manager: ['manager', 'employee', 'sales', 'field'],
+    employee: ['employee'],
     sales: ['sales'],
     field: ['field']
   };
@@ -60,9 +60,9 @@ export const usePermissions = () => {
   };
 
   const roleHierarchy = {
-    admin: ['admin', 'manager', 'developer', 'sales', 'field'],
-    manager: ['manager', 'developer', 'sales', 'field'],
-    developer: ['developer'],
+    admin: ['admin', 'manager', 'employee', 'sales', 'field'],
+    manager: ['manager', 'employee', 'sales', 'field'],
+    employee: ['employee'],
     sales: ['sales'],
     field: ['field']
   };

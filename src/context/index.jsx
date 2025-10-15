@@ -7,10 +7,12 @@ const GlobalContext = createContext(null);
 export const GlobalContextProvider = ({ children }) => {
 
     const userData = secureStorage.getItem('userData');
+    const userRole = secureStorage.getItem('userRole');
+    const isLogggedIn = secureStorage.getItem('isLoggedIn');
 
     const [userDataContext, setUserDataContext] = useState(userData);
-
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRoleContext, setUserRoleContext] = useState(userRole);
+    const [isLoggedIn, setIsLoggedIn] = useState(isLogggedIn);
 
     // Attendance context
     const attendance = useAttendance();
@@ -20,6 +22,8 @@ export const GlobalContextProvider = ({ children }) => {
             isLoggedIn,
             setIsLoggedIn,
             userDataContext,
+            userRoleContext,
+            setUserRoleContext,
             setUserDataContext,
             ...attendance
         }}>

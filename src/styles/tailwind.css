@@ -56,8 +56,8 @@
     /* Role-based Colors */
     --color-admin: #8B5CF6; /* violet-500 */
     --color-admin-foreground: #FFFFFF; /* white */
-    --color-developer: #06B6D4; /* cyan-500 */
-    --color-developer-foreground: #FFFFFF; /* white */
+    --color-employee: #06B6D4; /* cyan-500 */
+    --color-employee-foreground: #FFFFFF; /* white */
     --color-sales: #10B981; /* emerald-500 */
     --color-sales-foreground: #FFFFFF; /* white */
   }

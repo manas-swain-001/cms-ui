@@ -28,7 +28,7 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
           ],
           showGrid: true
         };
-      case 'developer':
+      case 'employee':
         return {
           title: 'My Task Status',
           metrics: [
@@ -177,7 +177,7 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
         >
           View Details
         </Button>
-        {userRole === 'developer' && (
+        {userRole === 'employee' && (
           <Button
             variant="default"
             size="sm"

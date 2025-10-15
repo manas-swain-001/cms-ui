@@ -7,7 +7,7 @@ const ComplianceMatrix = ({
   teamData = [], 
   selectedDate = new Date(), 
   onDateChange,
-  userRole = 'developer' 
+  userRole = 'employee' 
 }) => {
   const [viewMode, setViewMode] = useState('grid'); // grid, list
   const [sortBy, setSortBy] = useState('name');

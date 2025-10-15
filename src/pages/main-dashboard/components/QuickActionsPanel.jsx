@@ -63,13 +63,13 @@ const QuickActionsPanel = ({ userRole }) => {
             action: () => navigate('/main-dashboard')
           }
         ];
-      case 'developer':
+      case 'employee':
         return [
           {
             label: 'Update Tasks',
             description: 'Update three-slot tasks',
             icon: 'Code',
-            color: 'bg-developer/10 text-developer',
+            color: 'bg-employee/10 text-employee',
             action: () => navigate('/task-compliance-tracking')
           },
           {

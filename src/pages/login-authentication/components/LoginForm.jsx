@@ -27,7 +27,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
   const roleHints = [
     { role: 'Admin', email: 'admin@smartxalgo.com', description: 'Full system access' },
     /* { role: 'Manager', email: 'manager@smartxalgo.com', description: 'Team oversight' },
-    { role: 'Developer', email: 'developer@smartxalgo.com', description: 'Task compliance' },
+    { role: 'Developer', email: 'employee@smartxalgo.com', description: 'Task compliance' },
     { role: 'Sales', email: 'sales@smartxalgo.com', description: 'Lead management' },
     { role: 'Field', email: 'field@smartxalgo.com', description: 'Visit tracking' } */
   ];

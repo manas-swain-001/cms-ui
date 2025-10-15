@@ -10,7 +10,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: true,
+      employee: true,
       sales: true,
       field: true
     },
@@ -18,7 +18,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -26,7 +26,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -36,7 +36,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: true,
+      employee: true,
       sales: true,
       field: true
     },
@@ -44,7 +44,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: true,
+      employee: true,
       sales: true,
       field: true
     },
@@ -52,7 +52,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -60,7 +60,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -70,7 +70,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: true,
+      employee: true,
       sales: false,
       field: false
     },
@@ -78,7 +78,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -86,7 +86,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: true,
+      employee: true,
       sales: false,
       field: false
     },
@@ -94,7 +94,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: false,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -104,7 +104,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -112,7 +112,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -120,7 +120,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -128,7 +128,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: true,
       field: false
     },
@@ -138,7 +138,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: true
     },
@@ -146,7 +146,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: true
     },
@@ -154,7 +154,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: true,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -164,7 +164,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -172,7 +172,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -180,7 +180,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: true,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -188,7 +188,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: false,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -198,7 +198,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: false,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -206,7 +206,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: false,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     },
@@ -214,7 +214,7 @@ const RolePermissions = () => {
       admin: true,
       officeAdmin: false,
       manager: false,
-      developer: false,
+      employee: false,
       sales: false,
       field: false
     }
@@ -224,7 +224,7 @@ const RolePermissions = () => {
     { key: 'admin', name: 'Admin', color: 'text-admin', description: 'Full system access' },
     { key: 'officeAdmin', name: 'Office Admin', color: 'text-primary', description: 'Office-level management' },
     { key: 'manager', name: 'Manager', color: 'text-warning', description: 'Team management' },
-    { key: 'developer', name: 'Developer', color: 'text-developer', description: 'Development tasks' },
+    { key: 'employee', name: 'Developer', color: 'text-employee', description: 'Development tasks' },
     { key: 'sales', name: 'Sales', color: 'text-sales', description: 'Sales operations' },
     { key: 'field', name: 'Field', color: 'text-muted-foreground', description: 'Field operations' }
   ];

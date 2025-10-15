@@ -16,11 +16,12 @@ const Routes = () => {
 
   const protectedRoutes = [
     { path: '/main-dashboard', component: <MainDashboard /> },
-    { path: '/control-panel-settings', component: <ControlPanelSettings /> },
     { path: '/user-profile-management', component: <UserProfileManagement /> },
     { path: '/task-compliance-tracking', component: <TaskComplianceTracking /> },
     { path: '/attendance-management', component: <AttendanceManagement /> },
-    { path: '/manage-employees', component: <ManageEmployees /> },
+
+    { path: '/control-panel-settings', component: <ControlPanelSettings />, requiredRole: 'admin' },
+    { path: '/manage-employees', component: <ManageEmployees />, requiredRole: 'admin' },
   ];
 
   return (
@@ -34,9 +35,16 @@ const Routes = () => {
           <Route path="/login-authentication" element={<LoginAuthentication />} />
 
           {protectedRoutes.map((route) => (
-            <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.component}</ProtectedRoute>} />
+            <Route 
+              key={route.path} 
+              path={route.path} 
+              element={
+                <ProtectedRoute requiredRole={route.requiredRole}>
+                  {route.component}
+                </ProtectedRoute>
+              } 
+            />
           ))}
-
 
           <Route path="*" element={<NotFound />} />
 

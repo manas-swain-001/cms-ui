@@ -28,7 +28,7 @@ const NotificationPanel = ({ userRole }) => {
           time: new Date(Date.now() - 300000),
           priority: 'high',
           unread: true,
-          roles: ['developer', 'manager']
+          roles: ['employee', 'manager']
         },
         {
           id: 3,

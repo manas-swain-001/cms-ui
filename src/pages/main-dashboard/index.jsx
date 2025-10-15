@@ -114,7 +114,7 @@ const MainDashboard = () => {
     switch (role) {
       case 'admin': return 'System Administrator';
       case 'manager': return 'Team Manager';
-      case 'developer': return 'Developer';
+      case 'employee': return 'Developer';
       case 'sales': return 'Sales Representative';
       case 'field': return 'Field Worker';
       default: return 'User';
@@ -125,7 +125,7 @@ const MainDashboard = () => {
     switch (role) {
       case 'admin': return 'text-admin';
       case 'manager': return 'text-warning';
-      case 'developer': return 'text-developer';
+      case 'employee': return 'text-employee';
       case 'sales': return 'text-sales';
       case 'field': return 'text-field';
       default: return 'text-primary';

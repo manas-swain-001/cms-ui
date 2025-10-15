@@ -244,7 +244,7 @@ const FeatureFlags = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case 'Attendance': return 'text-primary bg-primary/10';
-      case 'Tasks': return 'text-developer bg-developer/10';
+      case 'Tasks': return 'text-employee bg-employee/10';
       case 'Sales': return 'text-sales bg-sales/10';
       case 'Field': return 'text-warning bg-warning/10';
       case 'System': return 'text-muted-foreground bg-muted';

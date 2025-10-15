@@ -8,7 +8,7 @@ const TaskSlotCard = ({
   onUpdate, 
   isDisabled = false, 
   timeRemaining = null,
-  userRole = 'developer' 
+  userRole = 'employee' 
 }) => {
   const [taskDescription, setTaskDescription] = useState(slot?.description || '');
   const [isEditing, setIsEditing] = useState(false);

@@ -22,7 +22,7 @@ const TaskComplianceTracking = () => {
   const currentUser = {
     id: 'user_001',
     name: 'Rajesh Kumar',
-    role: 'developer', // developer, manager, admin
+    role: 'employee', // employee, manager, admin
     team: 'Development Team A'
   };
 

@@ -9,12 +9,15 @@ import { useMutation } from '@tanstack/react-query';
 import { login } from 'api/login';
 import secureStorage from 'hooks/secureStorage';
 import { toast } from 'react-toastify';
+import { useGlobalContext } from 'context';
 
 const LoginAuthentication = () => {
   const [showBiometric, setShowBiometric] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [authStep, setAuthStep] = useState('form'); // form, biometric, processing, success
+
+  const { setIsLoggedIn, setUserDataContext, setUserRoleContext } = useGlobalContext();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +26,7 @@ const LoginAuthentication = () => {
   const mockCredentials = {
     'admin@smartxalgo.com': { password: 'admin123', role: 'admin', name: 'System Administrator' },
     'manager@smartxalgo.com': { password: 'admin123', role: 'manager', name: 'Team Manager' },
-    'developer@smartxalgo.com': { password: 'admin123', role: 'developer', name: 'Software Developer' },
+    'employee@smartxalgo.com': { password: 'admin123', role: 'employee', name: 'Software Developer' },
     'sales@smartxalgo.com': { password: 'admin123', role: 'sales', name: 'Sales Representative' },
     'field@smartxalgo.com': { password: 'admin123', role: 'field', name: 'Field Worker' }
   };
@@ -45,7 +48,13 @@ const LoginAuthentication = () => {
 
       // Store authentication data
       secureStorage.setItem('authToken', token);
-      secureStorage.setItem('userData', user);
+      secureStorage.setItem('userData', JSON.stringify(user));
+      secureStorage.setItem('userRole', user?.role);
+      secureStorage.setItem('isLoggedIn', true);
+
+      setUserDataContext(user);
+      setUserRoleContext(user?.role);
+      setIsLoggedIn(true);
 
       setAuthStep('success');
 
@@ -99,6 +108,12 @@ const LoginAuthentication = () => {
 
       secureStorage.setItem('authToken', authData?.token);
       secureStorage.setItem('userData', JSON.stringify(authData?.user));
+      secureStorage.setItem('userRole', authData?.user?.role);
+      secureStorage.setItem('isLoggedIn', true);
+
+      setUserDataContext(authData?.user);
+      setUserRoleContext(authData?.user?.role);
+      setIsLoggedIn(true);
 
       setAuthStep('success');
 
