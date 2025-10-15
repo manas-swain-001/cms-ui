@@ -11,11 +11,12 @@ import NotificationPanel from './components/NotificationPanel';
 import QuickActionsPanel from './components/QuickActionsPanel';
 import Icon from '../../components/AppIcon';
 import Header from 'components/ui/Header';
+import { useGlobalContext } from 'context';
 
 const MainDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [userRole, setUserRole] = useState('admin'); // Mock user role - in real app from auth context
+  const { userRoleContext: userRole } = useGlobalContext();
 
   // Update current time every minute
   useEffect(() => {
@@ -114,7 +115,7 @@ const MainDashboard = () => {
     switch (role) {
       case 'admin': return 'System Administrator';
       case 'manager': return 'Team Manager';
-      case 'employee': return 'Developer';
+      case 'employee': return 'Employee';
       case 'sales': return 'Sales Representative';
       case 'field': return 'Field Worker';
       default: return 'User';
@@ -179,7 +180,7 @@ const MainDashboard = () => {
                 <div className="mt-4 lg:mt-0">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Icon name="Building2" size={16} />
-                    <span>New York Office</span>
+                    <span>Bhubaneswar Office</span>
                     <div className="w-2 h-2 bg-success rounded-full ml-2" />
                     <span className="text-success">Online</span>
                   </div>

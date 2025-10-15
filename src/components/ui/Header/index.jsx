@@ -1,40 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Button from '../Button';
 import { useGlobalContext } from 'context';
 import secureStorage from 'hooks/secureStorage';
 
+const offices = [
+    { id: 1, name: 'Bhubaneswar Office', address: 'Bhubaneswar', status: 'active' },
+];
+
 const Header = () => {
+
     const [isOfficeDropdownOpen, setIsOfficeDropdownOpen] = useState(false);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const [selectedOffice, setSelectedOffice] = useState('New York Office');
+    const [selectedOffice, setSelectedOffice] = useState('Bhubaneswar Office');
     const [notificationCount, setNotificationCount] = useState(3);
 
     const officeDropdownRef = useRef(null);
     const userDropdownRef = useRef(null);
     const notificationRef = useRef(null);
-    const location = useLocation();
 
     const navigate = useNavigate();
 
     // Global context
-    const { setIsLoggedIn } = useGlobalContext();
-    // Mock user data - in real app this would come from auth context
-    const user = {
-        name: 'John Smith',
-        role: 'System Administrator',
-        avatar: '/assets/images/avatar.jpg',
-        email: 'john.smith@smartxalgo.com'
-    };
-
-    const offices = [
-        { id: 1, name: 'New York Office', address: '123 Broadway, NY 10001', status: 'active' },
-        { id: 2, name: 'Los Angeles Office', address: '456 Sunset Blvd, LA 90028', status: 'active' },
-        { id: 3, name: 'Chicago Office', address: '789 Michigan Ave, Chicago 60611', status: 'active' },
-        { id: 4, name: 'Miami Office', address: '321 Ocean Drive, Miami 33139', status: 'maintenance' }
-    ];
+    const { setIsLoggedIn, userDataContext: user, userProfile } = useGlobalContext();
 
     const notifications = [
         {
@@ -81,6 +71,28 @@ const Header = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const userFullName = useMemo(() => {
+        return (
+            [userProfile?.firstName, userProfile?.lastName]
+                ?.filter(Boolean) // remove undefined / empty strings
+                ?.join(' ') // join into "First Last"
+                ?.trim() // clean up extra spaces
+        )
+    }, [userProfile]);
+
+
+    const shortName = useMemo(() => {
+        return (
+            [userProfile?.firstName, userProfile?.lastName]
+                ?.filter(Boolean)
+                ?.join(' ')
+                ?.split(' ')
+                ?.map(n => n?.[0])
+                ?.join('')
+                ?.toUpperCase()
+        )
+    }, [userProfile])
+
     const handleOfficeSelect = (office) => {
         setSelectedOffice(office?.name);
         setIsOfficeDropdownOpen(false);
@@ -105,8 +117,14 @@ const Header = () => {
     const handleSignOut = () => {
         secureStorage.removeItem('authToken');
         secureStorage.removeItem('userData');
+        secureStorage.removeItem('userRole');
+        secureStorage.removeItem('isLoggedIn');
         setIsLoggedIn(false);
         navigate('/login-authentication');
+    };
+
+    const handleProfileSettings = () => {
+        navigate('/user-profile-management');
     };
 
     return (
@@ -231,11 +249,11 @@ const Header = () => {
                         >
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                                 <span className="text-sm font-medium text-primary-foreground">
-                                    {user?.name?.split(' ')?.map(n => n?.[0])?.join('')}
+                                    {shortName}
                                 </span>
                             </div>
                             <div className="text-left hidden md:block">
-                                <div className="text-sm font-medium text-foreground">{user?.name}</div>
+                                <div className="text-sm font-medium text-foreground">{userFullName}</div>
                                 <div className="text-xs text-muted-foreground">{user?.role}</div>
                             </div>
                             <Icon name="ChevronDown" size={14} />
@@ -247,22 +265,22 @@ const Header = () => {
                                     <div className="flex items-center space-x-3">
                                         <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                                             <span className="text-sm font-medium text-primary-foreground">
-                                                {user?.name?.split(' ')?.map(n => n?.[0])?.join('')}
+                                                {shortName}
                                             </span>
                                         </div>
                                         <div>
-                                            <div className="text-sm font-medium text-foreground">{user?.name}</div>
-                                            <div className="text-xs text-muted-foreground">{user?.email}</div>
+                                            <div className="text-sm font-medium text-foreground">{userFullName}</div>
+                                            <div className="text-xs text-muted-foreground">{userProfile?.email}</div>
                                             <div className="text-xs text-primary font-medium">{user?.role}</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="py-2">
-                                    <button className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors duration-200 flex items-center space-x-3">
+                                    <button onClick={handleProfileSettings} className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors duration-200 flex items-center space-x-3">
                                         <Icon name="User" size={16} />
                                         <span>Profile Settings</span>
                                     </button>
-                                    <button className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors duration-200 flex items-center space-x-3">
+                                    <button onClick={handleProfileSettings} className="w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors duration-200 flex items-center space-x-3">
                                         <Icon name="Settings" size={16} />
                                         <span>Preferences</span>
                                     </button>

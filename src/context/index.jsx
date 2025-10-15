@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import useAttendance from "./useAttendance";
 import secureStorage from "hooks/secureStorage";
+import useProfileContext from "./useProfileContext";
 
 const GlobalContext = createContext(null);
 
@@ -16,6 +17,7 @@ export const GlobalContextProvider = ({ children }) => {
 
     // Attendance context
     const attendance = useAttendance();
+    const profile = useProfileContext();
 
     return (
         <GlobalContext.Provider value={{
@@ -25,7 +27,8 @@ export const GlobalContextProvider = ({ children }) => {
             userRoleContext,
             setUserRoleContext,
             setUserDataContext,
-            ...attendance
+            ...attendance,
+            ...profile
         }}>
             {children}
         </GlobalContext.Provider>

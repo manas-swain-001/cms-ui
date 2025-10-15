@@ -9,7 +9,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    office: '',
+    office: 'bhubaneswar',
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -18,16 +18,13 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
   // Mock office locations
   const officeOptions = [
     { value: 'bhubaneswar', label: 'Bhubaneswar Office', description: 'Main Development Center' },
-    { value: 'mumbai', label: 'Mumbai Office', description: 'Sales & Operations Hub' },
-    { value: 'bangalore', label: 'Bangalore Office', description: 'Tech Innovation Center' },
-    { value: 'delhi', label: 'Delhi Office', description: 'Corporate Headquarters' }
   ];
 
   // Mock user role hints
   const roleHints = [
     { role: 'Admin', email: 'admin@smartxalgo.com', description: 'Full system access' },
     /* { role: 'Manager', email: 'manager@smartxalgo.com', description: 'Team oversight' },
-    { role: 'Developer', email: 'employee@smartxalgo.com', description: 'Task compliance' },
+    { role: 'Employee', email: 'employee@smartxalgo.com', description: 'Task compliance' },
     { role: 'Sales', email: 'sales@smartxalgo.com', description: 'Lead management' },
     { role: 'Field', email: 'field@smartxalgo.com', description: 'Visit tracking' } */
   ];
@@ -150,7 +147,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
             checked={formData?.rememberMe}
             onChange={(e) => handleInputChange('rememberMe', e?.target?.checked)}
           />
-          <Button variant="link" className="text-sm p-0 h-auto">
+          <Button type="button" variant="link" className="text-sm p-0 h-auto">
             Forgot password?
           </Button>
         </div>

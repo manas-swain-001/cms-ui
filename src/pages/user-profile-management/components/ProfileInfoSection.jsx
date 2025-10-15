@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 
 const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
+  
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(userProfile);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setFormData(userProfile);
+  }, [userProfile]);
 
   const departmentOptions = [
     { value: 'engineering', label: 'Engineering' },
@@ -149,6 +154,14 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
             disabled={!isEditing}
             required
           />
+
+          <Input
+            label="Date of Birth"
+            type="date"
+            value={formData?.dateOfBirth}
+            onChange={(e) => handleInputChange('dateOfBirth', e?.target?.value)}
+            disabled={!isEditing}
+          />
           
           <Input
             label="Employee ID"
@@ -158,13 +171,6 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
             description="Employee ID cannot be changed"
           />
           
-          <Input
-            label="Date of Birth"
-            type="date"
-            value={formData?.dateOfBirth}
-            onChange={(e) => handleInputChange('dateOfBirth', e?.target?.value)}
-            disabled={!isEditing}
-          />
         </div>
 
         {/* Contact Information */}
@@ -191,29 +197,62 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
             required
           />
           
-          <Input
-            label="Address"
-            type="text"
-            value={formData?.address}
-            onChange={(e) => handleInputChange('address', e?.target?.value)}
-            disabled={!isEditing}
-          />
+        </div>
+
+        {/* Address Information */}
+        <div className="space-y-4 md:col-span-2">
+          <h3 className="text-lg font-medium text-foreground mb-4">Address Information</h3>
           
-          <Input
-            label="Emergency Contact"
-            type="tel"
-            value={formData?.emergencyContact}
-            onChange={(e) => handleInputChange('emergencyContact', e?.target?.value)}
-            disabled={!isEditing}
-            description="Emergency contact phone number"
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Street"
+              type="text"
+              value={formData?.address?.street || ''}
+              onChange={(e) => handleInputChange('address', { ...formData?.address, street: e?.target?.value })}
+              disabled={!isEditing}
+            />
+            
+            <Input
+              label="City"
+              type="text"
+              value={formData?.address?.city || ''}
+              onChange={(e) => handleInputChange('address', { ...formData?.address, city: e?.target?.value })}
+              disabled={!isEditing}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input
+              label="State"
+              type="text"
+              value={formData?.address?.state || ''}
+              onChange={(e) => handleInputChange('address', { ...formData?.address, state: e?.target?.value })}
+              disabled={!isEditing}
+            />
+            
+            <Input
+              label="Country"
+              type="text"
+              value={formData?.address?.country || ''}
+              onChange={(e) => handleInputChange('address', { ...formData?.address, country: e?.target?.value })}
+              disabled={!isEditing}
+            />
+            
+            <Input
+              label="ZIP Code"
+              type="text"
+              value={formData?.address?.zipCode || ''}
+              onChange={(e) => handleInputChange('address', { ...formData?.address, zipCode: e?.target?.value })}
+              disabled={!isEditing}
+            />
+          </div>
         </div>
 
         {/* Organizational Information */}
         <div className="space-y-4 md:col-span-2">
           <h3 className="text-lg font-medium text-foreground mb-4">Organizational Information</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Department"
               options={departmentOptions}
@@ -237,13 +276,13 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
               disabled
               description="Contact HR to change reporting manager"
             />
-          </div>
+          </div> */}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Join Date"
               type="date"
-              value={formData?.joinDate}
+              value={formData?.joiningDate}
               disabled
               description="Join date cannot be modified"
             />
@@ -251,7 +290,8 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
             <Input
               label="Office Location"
               type="text"
-              value={formData?.officeLocation}
+              // value={formData?.officeLocation}
+              value={'Bhubaneswar, India'}
               disabled
               description="Contact admin to change office location"
             />
@@ -259,7 +299,7 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
         </div>
       </div>
       {/* Profile Completion Status */}
-      <div className="mt-6 p-4 bg-muted rounded-lg">
+      {/* <div className="mt-6 p-4 bg-muted rounded-lg">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">Profile Completion</span>
           <span className="text-sm text-primary font-medium">{formData?.completionPercentage}%</span>
@@ -273,7 +313,7 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
         <p className="text-xs text-muted-foreground mt-2">
           Complete your profile to access all features
         </p>
-      </div>
+      </div> */}
     </div>
   );
 };

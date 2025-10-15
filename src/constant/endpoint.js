@@ -6,5 +6,7 @@ export const endpoint = {
     users: {
         getAllUsers: "users",
         saveUser: "users/save",
+        getUserById: "users/",
+        updateUser: "users/",
     }
 }

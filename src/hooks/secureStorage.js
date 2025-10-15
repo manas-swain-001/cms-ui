@@ -1,10 +1,8 @@
-// utils/SecureStorage.ts
+// utils/SecureStorage.js
 import secureLocalStorage from "react-secure-storage";
 
-type ValueType = string | number | boolean | null | Record<string, unknown> | unknown[];
-
 class SecureStorage {
-    setItem(key: string, value: ValueType): void {
+    setItem(key, value) {
         try {
             const serialized = JSON.stringify(value);
             secureLocalStorage.setItem(key, serialized);
@@ -13,16 +11,17 @@ class SecureStorage {
         }
     }
 
-    getItem<T = ValueType>(key: string): T | null {
+    getItem(key) {
         try {
-            const item = secureLocalStorage.getItem(key) as string;
+            const item = secureLocalStorage.getItem(key);
+           
             if (!item) return null;
 
             try {
-                return JSON.parse(item) as T;
+                return JSON.parse(item);
             } catch (parseError) {
                 console.warn(`Item for key "${key}" is not JSON-parsable:`, parseError);
-                return item as unknown as T;
+                return item;
             }
         } catch (error) {
             console.error(`Failed to get item from secureLocalStorage: ${error}`);
@@ -30,7 +29,7 @@ class SecureStorage {
         }
     }
 
-    removeItem(key: string): void {
+    removeItem(key) {
         try {
             secureLocalStorage.removeItem(key);
         } catch (error) {
@@ -38,7 +37,7 @@ class SecureStorage {
         }
     }
 
-    clear(): void {
+    clear() {
         try {
             secureLocalStorage.clear();
         } catch (error) {
@@ -46,7 +45,7 @@ class SecureStorage {
         }
     }
 
-    hasItem(key: string): boolean {
+    hasItem(key) {
         try {
             return secureLocalStorage.getItem(key) !== null;
         } catch {

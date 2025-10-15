@@ -7,9 +7,9 @@ import OrganizationBranding from './components/OrganizationBranding';
 import OfflineIndicator from './components/OfflineIndicator';
 import { useMutation } from '@tanstack/react-query';
 import { login } from 'api/login';
-import secureStorage from 'hooks/secureStorage';
 import { toast } from 'react-toastify';
 import { useGlobalContext } from 'context';
+import secureStorage from 'hooks/secureStorage';
 
 const LoginAuthentication = () => {
   const [showBiometric, setShowBiometric] = useState(false);
@@ -48,7 +48,7 @@ const LoginAuthentication = () => {
 
       // Store authentication data
       secureStorage.setItem('authToken', token);
-      secureStorage.setItem('userData', JSON.stringify(user));
+      secureStorage.setItem('userData', user);
       secureStorage.setItem('userRole', user?.role);
       secureStorage.setItem('isLoggedIn', true);
 
@@ -107,7 +107,7 @@ const LoginAuthentication = () => {
       };
 
       secureStorage.setItem('authToken', authData?.token);
-      secureStorage.setItem('userData', JSON.stringify(authData?.user));
+      secureStorage.setItem('userData', authData?.user);
       secureStorage.setItem('userRole', authData?.user?.role);
       secureStorage.setItem('isLoggedIn', true);
 

@@ -11,26 +11,17 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Header from 'components/ui/Header';
 import secureStorage from 'hooks/secureStorage';
+import { useGlobalContext } from 'context';
+import { useMutation } from '@tanstack/react-query';
+import { getUserById, updateUser } from 'api/users';
+import { toast } from 'react-toastify';
 
 const UserProfileManagement = () => {
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-  const [userProfile, setUserProfile] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    employeeId: 'EMP001',
-    email: 'john.smith@smartxalgo.com',
-    phone: '+91 9876543210',
-    address: '123 Tech Park, Bhubaneswar, Odisha 751024',
-    emergencyContact: '+91 9876543211',
-    dateOfBirth: '1990-05-15',
-    department: 'engineering',
-    designation: 'senior_developer',
-    reportingManager: 'Sarah Johnson',
-    joinDate: '2022-03-15',
-    officeLocation: 'Bhubaneswar Office',
-    completionPercentage: 85
-  });
+
+  const { userDataContext, userProfile, setUserProfile } = useGlobalContext();
 
   const [securitySettings, setSecuritySettings] = useState({
     lastPasswordChange: '15 Dec 2024',
@@ -154,6 +145,33 @@ const UserProfileManagement = () => {
     { id: 'theme', label: 'Theme & Appearance', icon: 'Palette' }
   ];
 
+  const { mutate: GetUserById } = useMutation({
+    mutationKey: ['getUserById'],
+    mutationFn: ({ id }) => getUserById(id),
+    onSuccess: (res) => {
+      console.log('User fetched:', res?.user);
+      setUserProfile(res?.user);
+    },
+    onError: (err) => {
+      console.log('Error fetching user:', err);
+      toast.error(err?.message);
+    }
+  })
+
+  const { mutate: UpdateUserById } = useMutation({
+    mutationKey: ['updateUserById'],
+    mutationFn: ({ id, payload }) => updateUser(id, payload),
+    onSuccess: (res) => {
+      console.log('User updated:', res?.user);
+      toast.success(res?.message || 'User updated successfully');
+      GetUserById({ id: userDataContext?.id });
+    },
+    onError: (err) => {
+      console.log('Error updating user:', err);
+      toast.error(err?.message);
+    }
+  })
+
   // Load saved preferences from secureStorage
   useEffect(() => {
     const savedTheme = secureStorage.getItem('userThemeSettings');
@@ -165,17 +183,27 @@ const UserProfileManagement = () => {
     if (savedNotifications) {
       setNotificationPreferences(JSON.parse(savedNotifications));
     }
+
+    GetUserById({ id: userDataContext?.id });
   }, []);
 
   const handleUpdateProfile = (updatedProfile) => {
-    setUserProfile(updatedProfile);
-    // In real app, this would make an API call
-    console.log('Profile updated:', updatedProfile);
+    // console.log('Profile updated:', updatedProfile);
+    const bodyPayload = {
+      firstName: updatedProfile?.firstName,
+      lastName: updatedProfile?.lastName,
+      email: updatedProfile?.email,
+      phone: updatedProfile?.phone,
+      address: updatedProfile?.address,
+      dataOfBirth: updatedProfile?.dateOfBirth,
+    }
+    console.log('bodyPayload :::::::: ', bodyPayload);
+    UpdateUserById({ id: userDataContext?.id, payload: bodyPayload });
   };
 
   const handleUpdateSecurity = (securityUpdate) => {
     console.log('Security update:', securityUpdate);
-    
+
     switch (securityUpdate?.type) {
       case 'password':
         // Handle password change
@@ -212,7 +240,7 @@ const UserProfileManagement = () => {
 
   const handleUpdateShift = (shiftUpdate) => {
     console.log('Shift update:', shiftUpdate);
-    
+
     if (shiftUpdate?.type === 'exception') {
       setShiftData(prev => ({
         ...prev,
@@ -230,13 +258,13 @@ const UserProfileManagement = () => {
   const handleUpdateTheme = (updatedTheme) => {
     setThemeSettings(updatedTheme);
     secureStorage.setItem('userThemeSettings', JSON.stringify(updatedTheme));
-    
+
     // Apply theme to document
     document.documentElement?.setAttribute('data-theme', updatedTheme?.theme);
     document.documentElement?.setAttribute('data-font-size', updatedTheme?.accessibility?.fontSize);
     document.documentElement?.setAttribute('data-contrast', updatedTheme?.accessibility?.contrast);
     document.documentElement?.setAttribute('data-color-scheme', updatedTheme?.accessibility?.colorScheme);
-    
+
     console.log('Theme settings updated:', updatedTheme);
   };
 
@@ -292,16 +320,15 @@ const UserProfileManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Sidebar 
-        isCollapsed={sidebarCollapsed} 
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      <main className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-      } pt-16`}>
+      <main className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        } pt-16`}>
         <div className="p-6">
           <Breadcrumb />
-          
+
           {/* Page Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -310,7 +337,7 @@ const UserProfileManagement = () => {
                 Manage your personal information, security settings, and preferences
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <div className="text-right">
                 <div className="text-sm font-medium text-foreground">
@@ -334,10 +361,9 @@ const UserProfileManagement = () => {
                   <button
                     key={tab?.id}
                     onClick={() => setActiveTab(tab?.id)}
-                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200 ${
-                      activeTab === tab?.id
-                        ? 'border-primary text-primary' :'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                    }`}
+                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200 ${activeTab === tab?.id
+                      ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
+                      }`}
                   >
                     <Icon name={tab?.icon} size={16} />
                     <span>{tab?.label}</span>
@@ -362,7 +388,7 @@ const UserProfileManagement = () => {
             >
               <Icon name="HelpCircle" size={20} />
             </Button>
-            
+
             <Button
               variant="outline"
               size="icon"

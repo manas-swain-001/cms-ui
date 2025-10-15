@@ -224,7 +224,7 @@ const RolePermissions = () => {
     { key: 'admin', name: 'Admin', color: 'text-admin', description: 'Full system access' },
     { key: 'officeAdmin', name: 'Office Admin', color: 'text-primary', description: 'Office-level management' },
     { key: 'manager', name: 'Manager', color: 'text-warning', description: 'Team management' },
-    { key: 'employee', name: 'Developer', color: 'text-employee', description: 'Development tasks' },
+    { key: 'employee', name: 'Employee', color: 'text-employee', description: 'Development tasks' },
     { key: 'sales', name: 'Sales', color: 'text-sales', description: 'Sales operations' },
     { key: 'field', name: 'Field', color: 'text-muted-foreground', description: 'Field operations' }
   ];

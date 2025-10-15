@@ -183,7 +183,7 @@ const SecuritySettingsSection = ({ securitySettings, onUpdateSecurity }) => {
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className="border-b border-border pb-6">
+        {/* <div className="border-b border-border pb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-medium text-foreground">Two-Factor Authentication</h3>
@@ -219,10 +219,10 @@ const SecuritySettingsSection = ({ securitySettings, onUpdateSecurity }) => {
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Trusted Devices */}
-        <div>
+        {/* <div>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-medium text-foreground">Trusted Devices</h3>
@@ -266,7 +266,7 @@ const SecuritySettingsSection = ({ securitySettings, onUpdateSecurity }) => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Security Recommendations */}
         <div className="bg-warning/10 p-4 rounded-lg">
@@ -276,9 +276,9 @@ const SecuritySettingsSection = ({ securitySettings, onUpdateSecurity }) => {
           </div>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>• Use a unique, strong password for your account</li>
-            <li>• Enable two-factor authentication for enhanced security</li>
-            <li>• Regularly review and remove unused trusted devices</li>
-            <li>• Keep your recovery information up to date</li>
+            {/* <li>• Enable two-factor authentication for enhanced security</li> */}
+            {/* <li>• Regularly review and remove unused trusted devices</li> */}
+            {/* <li>• Keep your recovery information up to date</li> */}
           </ul>
         </div>
       </div>

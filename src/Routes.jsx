@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
@@ -11,8 +11,13 @@ import TaskComplianceTracking from './pages/task-compliance-tracking';
 import AttendanceManagement from './pages/attendance-management';
 import { ProtectedRoute } from './ProtectedRoute';
 import ManageEmployees from "pages/manage-employees";
+import { getUserById } from "api/users";
+import { useMutation } from "@tanstack/react-query";
+import { useGlobalContext } from "context";
 
 const Routes = () => {
+
+  const { setUserProfile, userDataContext } = useGlobalContext();
 
   const protectedRoutes = [
     { path: '/main-dashboard', component: <MainDashboard /> },
@@ -23,6 +28,18 @@ const Routes = () => {
     { path: '/control-panel-settings', component: <ControlPanelSettings />, requiredRole: 'admin' },
     { path: '/manage-employees', component: <ManageEmployees />, requiredRole: 'admin' },
   ];
+
+  const { mutate: GetUserById } = useMutation({
+    mutationKey: ['getUserById'],
+    mutationFn: getUserById,
+    onSuccess: (res) => {
+      setUserProfile(res?.user);
+    },
+  })
+
+  useEffect(() => {
+    GetUserById(userDataContext?.id);
+  }, [userDataContext?.id])
 
   return (
     <BrowserRouter>
@@ -35,14 +52,14 @@ const Routes = () => {
           <Route path="/login-authentication" element={<LoginAuthentication />} />
 
           {protectedRoutes.map((route) => (
-            <Route 
-              key={route.path} 
-              path={route.path} 
+            <Route
+              key={route.path}
+              path={route.path}
               element={
                 <ProtectedRoute requiredRole={route.requiredRole}>
                   {route.component}
                 </ProtectedRoute>
-              } 
+              }
             />
           ))}
 

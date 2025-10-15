@@ -34,7 +34,7 @@ const AuditLogs = () => {
       description: 'Created new user account for John Doe',
       details: {
         newUserId: 'emp123',
-        role: 'Developer',
+        role: 'Employee',
         office: 'Mumbai Office'
       },
       ipAddress: '192.168.1.101',
