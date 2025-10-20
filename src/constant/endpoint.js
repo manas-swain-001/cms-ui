@@ -8,5 +8,9 @@ export const endpoint = {
         saveUser: "users/save",
         getUserById: "users/",
         updateUser: "users/",
+    },
+    sms: {
+        sendSalarySms: "sms/salary",
+        sendGreetingSms: "sms/greeting",
     }
 }

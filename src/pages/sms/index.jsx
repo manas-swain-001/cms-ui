@@ -1,153 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
-import SalarySms from './components/SalarySms';
-import Greetings from './components/Greetings';
-import Icon from '../../components/AppIcon';
+import MultiSelect from '../../components/ui/MultiSelect';
 import Button from '../../components/ui/Button';
 import Header from 'components/ui/Header';
-import secureStorage from 'hooks/secureStorage';
-import { useGlobalContext } from 'context';
 import { useMutation } from '@tanstack/react-query';
-import { getUserById, updateUser } from 'api/users';
+import { getAllUsers } from 'api/users';
+import { sendSalarySms } from 'api/sms';
 import { toast } from 'react-toastify';
 
 const SmsManagement = () => {
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('salarySms');
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { userDataContext, userProfile, setUserProfile } = useGlobalContext();
-
-  const [securitySettings, setSecuritySettings] = useState({
-    lastPasswordChange: '15 Dec 2024',
-    twoFactorEnabled: true,
-    trustedDevices: [
-      {
-        id: 'device_1',
-        name: 'MacBook Pro',
-        type: 'desktop',
-        location: 'Bhubaneswar, India',
-        lastUsed: '2 hours ago',
-        current: true
-      },
-      {
-        id: 'device_2',
-        name: 'iPhone 14',
-        type: 'mobile',
-        location: 'Bhubaneswar, India',
-        lastUsed: '1 day ago',
-        current: false
-      },
-      {
-        id: 'device_3',
-        name: 'iPad Air',
-        type: 'tablet',
-        location: 'Mumbai, India',
-        lastUsed: '3 days ago',
-        current: false
-      }
-    ]
+  // Fetch all users for multi-select options
+  const { mutate: fetchUsers } = useMutation({
+    mutationKey: ['getAllUsers'],
+    mutationFn: getAllUsers,
+    onSuccess: (res) => {
+      console.log('Users fetched:', res?.users);
+      setEmployees(res?.users || []);
+    },
+    onError: (err) => {
+      console.log('Error fetching users:', err);
+      toast.error('Failed to fetch employees');
+    }
   });
 
+  // Send salary SMS mutation
+  const { mutate: sendSms, isPending: isSendingSms } = useMutation({
+    mutationKey: ['sendSalarySms'],
+    mutationFn: sendSalarySms,
+    onSuccess: (res) => {
+      console.log('SMS sent successfully:', res);
+      toast.success(res?.message || 'SMS sent successfully');
+      setSelectedEmployees([]); // Clear selection after successful send
+    },
+    onError: (err) => {
+      console.log('Error sending SMS:', err);
+      toast.error(err?.message || 'Failed to send SMS');
+    }
+  });
+
+  // Load employees on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Handle multi-select change
+  const handleEmployeeChange = (selectedIds) => {
+    console.log('Selected employee IDs:', selectedIds);
+    setSelectedEmployees(selectedIds);
+  };
+
+  // Handle send button click
+  const handleSendSms = () => {
+    if (selectedEmployees.length === 0) {
+      toast.warning('Please select at least one employee');
+      return;
+    }
+    
+    console.log('Sending SMS to employees with IDs:', selectedEmployees);
+    
+    // Prepare payload with array of user IDs as strings
+    const payload = {
+      userIds: selectedEmployees.map(id => String(id)) // Ensure IDs are strings
+    };
+    
+    console.log('SMS payload:', payload);
+    sendSms(payload);
+  };
+
+  // Prepare options for multi-select
+  const employeeOptions = employees.map(employee => ({
+    id: employee.id || employee._id,
+    firstName: employee.firstName || '',
+    lastName: employee.lastName || '',
+    value: employee.id || employee._id,
+    label: `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'Unknown Employee'
+  }));
+
   const tabs = [
-    { id: 'salarySms', label: 'Salary SMS', icon: 'User' },
-    { id: 'greetings', label: 'Greetings', icon: 'MessageCircle' },
+    { id: 'salarySms', label: 'Salary SMS', icon: 'MessageSquare' },
+    { id: 'greetings', label: 'Greetings', icon: 'Heart' }
   ];
-
-  const { mutate: GetUserById } = useMutation({
-    mutationKey: ['getUserById'],
-    mutationFn: ({ id }) => getUserById(id),
-    onSuccess: (res) => {
-      console.log('User fetched:', res?.user);
-      setUserProfile(res?.user);
-    },
-    onError: (err) => {
-      console.log('Error fetching user:', err);
-      toast.error(err?.message);
-    }
-  })
-
-  const { mutate: UpdateUserById } = useMutation({
-    mutationKey: ['updateUserById'],
-    mutationFn: ({ id, payload }) => updateUser(id, payload),
-    onSuccess: (res) => {
-      console.log('User updated:', res?.user);
-      toast.success(res?.message || 'User updated successfully');
-      GetUserById({ id: userDataContext?.id });
-    },
-    onError: (err) => {
-      console.log('Error updating user:', err);
-      toast.error(err?.message);
-    }
-  })
-
-  const handleUpdateProfile = (updatedProfile) => {
-    // console.log('Profile updated:', updatedProfile);
-    const bodyPayload = {
-      firstName: updatedProfile?.firstName,
-      lastName: updatedProfile?.lastName,
-      email: updatedProfile?.email,
-      phone: updatedProfile?.phone,
-      address: updatedProfile?.address,
-      dataOfBirth: updatedProfile?.dateOfBirth,
-    }
-    console.log('bodyPayload :::::::: ', bodyPayload);
-    UpdateUserById({ id: userDataContext?.id, payload: bodyPayload });
-  };
-
-  const handleUpdateSecurity = (securityUpdate) => {
-    console.log('Security update:', securityUpdate);
-
-    switch (securityUpdate?.type) {
-      case 'password':
-        // Handle password change
-        setSecuritySettings(prev => ({
-          ...prev,
-          lastPasswordChange: new Date()?.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-          })
-        }));
-        break;
-      case 'twoFactor':
-        setSecuritySettings(prev => ({
-          ...prev,
-          twoFactorEnabled: securityUpdate?.data?.enabled
-        }));
-        break;
-      case 'removeDevice':
-        setSecuritySettings(prev => ({
-          ...prev,
-          trustedDevices: prev?.trustedDevices?.filter(
-            device => device?.id !== securityUpdate?.data?.deviceId
-          )
-        }));
-        break;
-    }
-  };
-
-  const renderActiveTab = () => {
-    switch (activeTab) {
-      case 'salarySms':
-        return (
-          <SalarySms
-            userProfile={userProfile}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        );
-      case 'greetings':
-        return (
-          <Greetings
-            securitySettings={securitySettings}
-            onUpdateSecurity={handleUpdateSecurity}
-          />
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,34 +105,88 @@ const SmsManagement = () => {
             <div>
               <h1 className="text-3xl font-bold text-foreground">SMS Management</h1>
               <p className="text-muted-foreground mt-2">
-                Manage your salary SMS and greetings
+                Send salary notifications and greetings to employees
               </p>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="mb-8">
-            <div className="border-b border-border">
-              <nav className="flex space-x-8 overflow-x-auto">
-                {tabs?.map((tab) => (
-                  <button
-                    key={tab?.id}
-                    onClick={() => setActiveTab(tab?.id)}
-                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200 ${activeTab === tab?.id
-                      ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                      }`}
-                  >
-                    <Icon name={tab?.icon} size={16} />
-                    <span>{tab?.label}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
+          <div className="flex space-x-1 mb-8 bg-muted p-1 rounded-lg w-fit">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
 
           {/* Tab Content */}
-          <div className="max-w-6xl">
-            {renderActiveTab()}
+          <div className="max-w-4xl">
+            {activeTab === 'salarySms' && (
+              <div className="bg-card rounded-lg border border-border p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                    Send Salary SMS
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Select employees to send salary notifications via SMS
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Multi-Select for Employees */}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Select Employees
+                    </label>
+                    <MultiSelect
+                      options={employeeOptions}
+                      value={selectedEmployees}
+                      onChange={handleEmployeeChange}
+                      placeholder="Search and select employees..."
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedEmployees.length} employee(s) selected
+                    </p>
+                  </div>
+
+                  {/* Send Button */}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="default"
+                      iconName="Send"
+                      iconPosition="left"
+                      onClick={handleSendSms}
+                      disabled={selectedEmployees.length === 0 || isSendingSms}
+                      loading={isSendingSms}
+                    >
+                      {isSendingSms ? 'Sending...' : 'Send SMS'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'greetings' && (
+              <div className="bg-card rounded-lg border border-border p-6">
+                <div className="text-center py-12">
+                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                    Greetings SMS
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Greetings functionality coming soon...
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -204,16 +197,7 @@ const SmsManagement = () => {
               className="w-12 h-12 rounded-full shadow-lg"
               title="Help & Support"
             >
-              <Icon name="HelpCircle" size={20} />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-12 h-12 rounded-full shadow-lg bg-card"
-              title="Export Profile Data"
-            >
-              <Icon name="Download" size={20} />
+              <span className="text-lg">?</span>
             </Button>
           </div>
         </div>
