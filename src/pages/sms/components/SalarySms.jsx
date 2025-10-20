@@ -3,17 +3,12 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
-import { useGlobalContext } from '../../../context';
 
-const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
-  const { userRoleContext } = useGlobalContext();
+const SalarySms = ({ userProfile, onUpdateProfile }) => {
   
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(userProfile);
   const [errors, setErrors] = useState({});
-
-  // Check if user is admin
-  const isAdmin = userRoleContext === 'admin';
 
   useEffect(() => {
     setFormData(userProfile);
@@ -301,27 +296,6 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
               description="Contact admin to change office location"
             />
           </div>
-
-          {/* Admin-only fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Account Number"
-              type="text"
-              value={formData?.accNo || ''}
-              onChange={(e) => handleInputChange('accNo', e?.target?.value)}
-              disabled={!isEditing || !isAdmin}
-              description={isAdmin ? "Admin can edit this field" : "Only admin can edit this field"}
-            />
-            
-            <Input
-              label="Salary"
-              type="number"
-              value={formData?.salary || ''}
-              onChange={(e) => handleInputChange('salary', e?.target?.value)}
-              disabled={!isEditing || !isAdmin}
-              description={isAdmin ? "Admin can edit this field" : "Only admin can edit this field"}
-            />
-          </div>
         </div>
       </div>
       {/* Profile Completion Status */}
@@ -344,4 +318,4 @@ const ProfileInfoSection = ({ userProfile, onUpdateProfile }) => {
   );
 };
 
-export default ProfileInfoSection;
+export default SalarySms;

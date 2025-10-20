@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Table from '../../../components/Table';
@@ -7,8 +7,16 @@ import { formatDateToDDMMYYYY } from 'utils/function';
 const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState(userProfile);
   const [errors, setErrors] = useState({});
+
+  // Update form data when userProfile changes (after successful update)
+  useEffect(() => {
+    if (userProfile && userProfile.id && userProfile.id !== '0' && userProfile.id !== 0) {
+      setFormData(userProfile);
+    }
+  }, [userProfile]);
 
   // Table columns configuration
   const tableColumns = [
@@ -29,6 +37,11 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
       key: 'joiningDate',
       header: 'Join Date',
       render: (value) => formatDateToDDMMYYYY(value)
+    },
+    {
+      key: 'salary',
+      header: 'Salary',
+      render: (value) => value ? `₹${value.toLocaleString()}` : '-'
     },
     {
       key: 'actions',
@@ -110,11 +123,29 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
     if (validateForm()) {
       onUpdateProfile(formData);
       setIsEditing(false);
+      setEditingEmployee(null);
     }
   };
 
   const handleCancel = () => {
-    setFormData(userProfile);
+    if (editingEmployee) {
+      // If editing an employee, reset to new employee form
+      setFormData({
+        id: '',
+        firstName: '',
+        lastName: '',
+        employeeId: '',
+        email: '',
+        phone: '',
+        joinDate: '',
+        accNo: '',
+        salary: '',
+      });
+      setEditingEmployee(null);
+    } else {
+      // If creating new employee, reset to default
+      setFormData(userProfile);
+    }
     setErrors({});
     setIsEditing(false);
   };
@@ -150,10 +181,29 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
 
   const handleEditEmployee = (employee) => {
     console.log('Edit employee:', employee);
-
-    return;
-    setFormData(employee);
+    console.log('employee.id:', employee.id);
+    console.log('employee._id:', employee._id);
+    console.log('All employee keys:', Object.keys(employee));
+    
+    // Set the employee data to form
+    const formData = {
+      id: employee.id || employee._id || '',
+      firstName: employee.firstName || '',
+      lastName: employee.lastName || '',
+      employeeId: employee.employeeId || '',
+      email: employee.email || '',
+      phone: employee.phone || '',
+      joinDate: employee.joiningDate || employee.joinDate || '',
+      accNo: employee.accNo || '',
+      salary: employee.salary || '',
+    };
+    
+    console.log('Setting formData:', formData);
+    setFormData(formData);
+    
+    setEditingEmployee(employee);
     setIsEditing(true);
+    setErrors({});
   };
 
   const handleDeleteEmployee = (employee) => {
@@ -165,16 +215,57 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
     // Add row click logic here
   };
 
+  const handleAddEmployee = () => {
+    // Reset form to clean state for new employee
+    setFormData({
+      id: '',
+      firstName: '',
+      lastName: '',
+      employeeId: '',
+      email: '',
+      phone: '',
+      joinDate: '',
+      accNo: '',
+      salary: '',
+    });
+    setEditingEmployee(null);
+    setErrors({});
+    setIsEditing(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Employee Form */}
       <div className="bg-card rounded-lg border border-border p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-foreground mb-4">Basic Information</h3>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">
+              {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {editingEmployee ? 'Update employee information' : 'Enter new employee details'}
+            </p>
+          </div>
+          {!isEditing && (
+            <Button
+              variant="outline"
+              iconName="Plus"
+              iconPosition="left"
+              onClick={handleAddEmployee}
+            >
+              Add Employee
+            </Button>
+          )}
+        </div>
+        
+        {isEditing && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-foreground mb-4">Basic Information</h3>
 
-            <Input
+                <Input
               label="First Name"
               type="text"
               value={formData?.firstName}
@@ -246,26 +337,45 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
               required
             />
 
-          </div>
-        </div>
-        <div className="flex justify-end space-x-2 mt-4">
-          {/* <Button
-            variant="outline"
-            iconName="X"
-            iconPosition="left"
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button> */}
-          <Button
-            variant="default"
-            iconName="Save"
-            iconPosition="left"
-            onClick={handleSave}
-          >
-            Save Changes
-          </Button>
-        </div>
+            <Input
+              label="Account Number"
+              type="text"
+              value={formData?.accNo || ''}
+              onChange={(e) => handleInputChange('accNo', e?.target?.value)}
+              description="Admin can edit this field"
+            />
+
+            <Input
+              label="Salary"
+              type="number"
+              value={formData?.salary || ''}
+              onChange={(e) => handleInputChange('salary', e?.target?.value)}
+              description="Admin can edit this field"
+            />
+
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button
+                variant="outline"
+                iconName="X"
+                iconPosition="left"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                iconName="Save"
+                iconPosition="left"
+                onClick={handleSave}
+              >
+                {editingEmployee ? 'Update Employee' : 'Save Changes'}
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Employees Table */}

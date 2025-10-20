@@ -166,16 +166,16 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
         </Button>
 
         {/* Biometric Toggle */}
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">Or</span>
           </div>
-        </div>
+        </div> */}
 
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           size="lg"
@@ -185,10 +185,10 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
           disabled={isLoading}
         >
           {showBiometric ? 'Use Password Login' : 'Use Biometric Login'}
-        </Button>
+        </Button> */}
       </form>
       {/* Role Hints */}
-      <div className="mt-8 p-4 bg-muted rounded-lg">
+      {/* <div className="mt-8 p-4 bg-muted rounded-lg">
         <h3 className="text-sm font-medium text-foreground mb-3">Demo Accounts</h3>
         <div className="grid grid-cols-1 gap-2">
           {roleHints?.map((hint) => (
@@ -212,7 +212,7 @@ const LoginForm = ({ onSubmit, onBiometricToggle, showBiometric, isLoading, erro
         <p className="text-xs text-muted-foreground mt-2">
           Click any role to auto-fill credentials (Password: admin123)
         </p>
-      </div>
+      </div> */}
     </div>
   );
 };

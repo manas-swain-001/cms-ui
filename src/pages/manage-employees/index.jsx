@@ -6,7 +6,7 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Header from 'components/ui/Header';
 import { useManageEmployees } from './useManageEmployees';
-import { saveUser } from 'api/users';
+import { saveUser, updateUser } from 'api/users';
 import { toast } from 'react-toastify';
 import { useMutation } from '@tanstack/react-query';
 
@@ -16,13 +16,15 @@ const ManageEmployees = () => {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    id: 0,
+    id: '',
     firstName: '',
     lastName: '',
     employeeId: '',
     email: '',
     phone: '',
     joinDate: '',
+    accNo: '',
+    salary: '',
   });
 
   const { mutate: SaveUser } = useMutation({
@@ -33,13 +35,15 @@ const ManageEmployees = () => {
       toast.success(res?.message || 'User saved successfully');
       refetchGetAllUsers();
       setUserProfile({
-        id: 0,
+        id: '',
         firstName: '',
         lastName: '',
         employeeId: '',
         email: '',
         phone: '',
         joinDate: '',
+        accNo: '',
+        salary: '',
       });
     },
     onError: (err) => {
@@ -48,10 +52,50 @@ const ManageEmployees = () => {
     }
   })
 
+  const { mutate: UpdateUser } = useMutation({
+    mutationKey: ['updateUserData'],
+    mutationFn: ({ id, payload }) => updateUser(id, payload),
+    onSuccess: (res) => {
+      console.log('User updated:', res);
+      toast.success(res?.message || 'User updated successfully');
+      refetchGetAllUsers();
+      
+      // Update the form with the updated employee data
+      if (res?.user) {
+        setUserProfile({
+          id: res.user.id || res.user._id,
+          firstName: res.user.firstName || '',
+          lastName: res.user.lastName || '',
+          employeeId: res.user.employeeId || '',
+          email: res.user.email || '',
+          phone: res.user.phone || '',
+          joinDate: res.user.joiningDate || res.user.joinDate || '',
+          accNo: res.user.accNo || '',
+          salary: res.user.salary || '',
+        });
+      }
+    },
+    onError: (err) => {
+      console.log('Error updating user:', err);
+      toast.error(err?.message);
+    }
+  })
+
   const handleUpdateProfile = (updatedProfile) => {
-    setUserProfile(updatedProfile);
-    SaveUser(updatedProfile);
-    // In real app, this would make an API call
+    console.log('handleUpdateProfile called with:', updatedProfile);
+    console.log('updatedProfile.id:', updatedProfile.id);
+    console.log('updatedProfile.id type:', typeof updatedProfile.id);
+
+    if (updatedProfile.id && updatedProfile.id !== '0' && updatedProfile.id !== 0) {
+      // Update existing user
+      console.log('Calling UpdateUser API');
+      const { id, ...payload } = updatedProfile;
+      UpdateUser({ id, payload });
+    } else {
+      // Create new user
+      console.log('Calling SaveUser API');
+      SaveUser(updatedProfile);
+    }
     console.log('Profile updated:', updatedProfile);
   };
 

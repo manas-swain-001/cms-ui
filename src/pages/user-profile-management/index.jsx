@@ -21,7 +21,7 @@ const UserProfileManagement = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
 
-  const { userDataContext, userProfile, setUserProfile } = useGlobalContext();
+  const { userDataContext, userRoleContext, userProfile, setUserProfile } = useGlobalContext();
 
   const [securitySettings, setSecuritySettings] = useState({
     lastPasswordChange: '15 Dec 2024',
@@ -139,7 +139,7 @@ const UserProfileManagement = () => {
   const tabs = [
     { id: 'profile', label: 'Profile Information', icon: 'User' },
     { id: 'security', label: 'Security Settings', icon: 'Shield' },
-    { id: 'biometric', label: 'Biometric Enrollment', icon: 'Scan' },
+    // { id: 'biometric', label: 'Biometric Enrollment', icon: 'Scan' },
     { id: 'shift', label: 'Shift Assignment', icon: 'Calendar' },
     { id: 'notifications', label: 'Notifications', icon: 'Bell' },
     { id: 'theme', label: 'Theme & Appearance', icon: 'Palette' }
@@ -197,6 +197,13 @@ const UserProfileManagement = () => {
       address: updatedProfile?.address,
       dataOfBirth: updatedProfile?.dateOfBirth,
     }
+
+    // Only include admin-only fields if user is admin
+    if (userRoleContext === 'admin') {
+      bodyPayload.accNo = updatedProfile?.accNo;
+      bodyPayload.salary = updatedProfile?.salary;
+    }
+
     console.log('bodyPayload :::::::: ', bodyPayload);
     UpdateUserById({ id: userDataContext?.id, payload: bodyPayload });
   };

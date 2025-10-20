@@ -16,6 +16,8 @@ export default function useProfileContext() {
         "employeeId": "",
 
         "phone": "",
+        "accNo": "",
+        "salary": "",
         "address": {
             "street": "",
             "city": "",

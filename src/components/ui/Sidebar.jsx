@@ -54,6 +54,13 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       icon: 'Users',
       roles: ['admin'],
       badge: null
+    },
+    {
+      label: 'SMS',
+      path: '/sms',
+      icon: 'MessageCircle',
+      roles: ['admin'],
+      badge: null
     }
   ];
 

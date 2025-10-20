@@ -14,6 +14,7 @@ import ManageEmployees from "pages/manage-employees";
 import { getUserById } from "api/users";
 import { useMutation } from "@tanstack/react-query";
 import { useGlobalContext } from "context";
+import SmsManagement from "pages/sms";
 
 const Routes = () => {
 
@@ -27,6 +28,7 @@ const Routes = () => {
 
     { path: '/control-panel-settings', component: <ControlPanelSettings />, requiredRole: 'admin' },
     { path: '/manage-employees', component: <ManageEmployees />, requiredRole: 'admin' },
+    { path: '/sms', component: <SmsManagement />, requiredRole: 'admin' },
   ];
 
   const { mutate: GetUserById } = useMutation({

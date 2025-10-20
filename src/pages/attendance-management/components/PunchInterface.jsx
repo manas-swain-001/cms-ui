@@ -27,23 +27,40 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices?.getUserMedia({ 
-        video: { 
-          width: 640, 
+      const stream = await navigator.mediaDevices?.getUserMedia({
+        video: {
+          width: 640,
           height: 480,
           facingMode: 'user'
-        } 
+        }
       });
       setCameraStream(stream);
-      if (videoRef?.current) {
-        videoRef.current.srcObject = stream;
-      }
       setIsCapturing(true);
     } catch (error) {
       console.error('Camera access denied:', error);
       setBiometricStatus('failed');
     }
   };
+
+  // Attach stream to video element when both stream and video element are available
+  useEffect(() => {
+    if (cameraStream && isCapturing) {
+      // Small delay to ensure video element is rendered
+      const timer = setTimeout(() => {
+        if (videoRef?.current) {
+          videoRef.current.srcObject = cameraStream;
+        } else {
+          // Retry after a short delay
+          setTimeout(() => {
+            if (videoRef?.current) {
+              videoRef.current.srcObject = cameraStream;
+            }
+          }, 100);
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [cameraStream, isCapturing]);
 
   const stopCamera = () => {
     if (cameraStream) {
@@ -60,24 +77,29 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
       const canvas = canvasRef?.current;
       const video = videoRef?.current;
       const context = canvas?.getContext('2d');
-      
+
       canvas.width = video?.videoWidth;
       canvas.height = video?.videoHeight;
       context?.drawImage(video, 0, 0);
-      
+
       const imageData = canvas?.toDataURL('image/jpeg');
       setCapturedImage(imageData);
       setBiometricStatus('processing');
-      
-      // Mock biometric processing
+
       setTimeout(() => {
+        setBiometricStatus('success');
+      }, 2000);
+
+
+      // Mock biometric processing
+      /* setTimeout(() => {
         const similarity = Math.random() * 100;
         if (similarity > 75) {
           setBiometricStatus('success');
         } else {
           setBiometricStatus('failed');
         }
-      }, 2000);
+      }, 2000); */
     }
   };
 
@@ -85,7 +107,7 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
     if (geofenceViolation && !violationReason?.trim()) {
       return;
     }
-console.log('currentStatus ---------------> :::: ', currentStatus);
+    console.log('currentStatus ---------------> :::: ', currentStatus);
     const punchData = {
       type: currentStatus === 'checked_out' ? 'check_in' : 'check_out',
       timestamp: new Date()?.toISOString(),
@@ -136,19 +158,18 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
           </div>
           <div className="flex items-center space-x-2">
             <Icon name="Navigation" size={16} className="text-primary" />
-            <span className="text-muted-foreground">{officeDistance}m from office</span>
+            <span className="text-muted-foreground">{officeDistance} from office</span>
           </div>
         </div>
       </div>
       {/* Current Status */}
       <div className="text-center mb-6">
-        <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full border ${
-          currentStatus === 'checked_in' ? 'bg-success/10 border-success/20' : 'bg-error/10 border-error/20'
-        }`}>
-          <Icon 
-            name={currentStatus === 'checked_in' ? 'CheckCircle' : 'XCircle'} 
-            size={16} 
-            className={getStatusColor(currentStatus)} 
+        <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full border ${currentStatus === 'checked_in' ? 'bg-success/10 border-success/20' : 'bg-error/10 border-error/20'
+          }`}>
+          <Icon
+            name={currentStatus === 'checked_in' ? 'CheckCircle' : 'XCircle'}
+            size={16}
+            className={getStatusColor(currentStatus)}
           />
           <span className={`font-medium ${getStatusColor(currentStatus)}`}>
             {currentStatus === 'checked_in' ? 'Checked In' : 'Checked Out'}
@@ -180,7 +201,6 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
       {/* Biometric Interface */}
       <div className="mb-6">
         <h3 className="text-lg font-medium text-foreground mb-4 text-center">Face Verification</h3>
-        
         {!isCapturing ? (
           <div className="text-center">
             <div className="w-48 h-48 mx-auto mb-4 bg-muted rounded-lg flex items-center justify-center">
@@ -201,7 +221,7 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
           </div>
         ) : (
           <div className="text-center">
-            <div className="relative w-48 h-48 mx-auto mb-4 bg-black rounded-lg overflow-hidden">
+            <div className="relative w-48 h-48 mx-auto mb-4 rounded-lg overflow-hidden">
               <video
                 ref={videoRef}
                 autoPlay
@@ -228,9 +248,9 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
                 </div>
               )}
             </div>
-            
+
             <canvas ref={canvasRef} className="hidden" />
-            
+
             <div className="flex justify-center space-x-3 mb-4">
               {biometricStatus === 'ready' && (
                 <Button
@@ -261,14 +281,14 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
                 Cancel
               </Button>
             </div>
-            
+
             {biometricStatus === 'success' && (
-              <p className="text-sm text-success mb-2">✓ Face verified successfully (85% match)</p>
+              <p className="text-sm text-success mb-2">✓ Face verified successfully</p>
             )}
             {biometricStatus === 'failed' && (
               <p className="text-sm text-error mb-2">✗ Face verification failed (45% match)</p>
             )}
-            
+
             <p className="text-xs text-muted-foreground">
               Look directly at the camera and ensure good lighting
             </p>
@@ -292,7 +312,7 @@ console.log('currentStatus ---------------> :::: ', currentStatus);
         >
           {currentStatus === 'checked_out' ? 'Check In' : 'Check Out'}
         </Button>
-        
+
         {gpsStatus?.accuracy === 'unavailable' && (
           <p className="text-sm text-error mt-2">GPS location required for attendance</p>
         )}

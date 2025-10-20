@@ -15,7 +15,8 @@ const Breadcrumb = () => {
     '/control-panel-settings': { label: 'Administration', parent: '/main-dashboard' },
     '/user-profile-management': { label: 'Profile Settings', parent: '/main-dashboard' },
     '/login-authentication': { label: 'Authentication', parent: null },
-    '/manage-employees': { label: 'Manage Employees', parent: '/main-dashboard' }
+    '/manage-employees': { label: 'Manage Employees', parent: '/main-dashboard' },
+    '/sms': { label: 'SMS', parent: '/main-dashboard' }
   };
 
   const generateBreadcrumbs = () => {
