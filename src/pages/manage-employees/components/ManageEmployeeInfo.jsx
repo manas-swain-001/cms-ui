@@ -49,7 +49,7 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
       headerClassName: 'text-center',
       cellClassName: 'text-center',
       render: (value, row, rowIndex) => (
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center">
           <Button
             variant="ghost"
             size="sm"
@@ -57,15 +57,6 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
             onClick={(e) => {
               e.stopPropagation();
               handleEditEmployee(row);
-            }}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            iconName="Trash2"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteEmployee(row);
             }}
           />
         </div>
@@ -206,9 +197,6 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
     setErrors({});
   };
 
-  const handleDeleteEmployee = (employee) => {
-    console.log('Delete employee:', employee);
-  };
 
   const handleRowClick = (employee) => {
     console.log('Row clicked:', employee);

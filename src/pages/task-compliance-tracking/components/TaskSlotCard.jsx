@@ -3,92 +3,43 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 
-const TaskSlotCard = ({ 
+const TaskSlotCard = ({
   slot, 
   onUpdate, 
   isDisabled = false, 
-  timeRemaining = null,
   userRole = 'employee' 
 }) => {
   const [taskDescription, setTaskDescription] = useState(slot?.description || '');
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getSlotConfig = (slotType) => {
-    switch (slotType) {
-      case 'morning':
-        return {
-          title: 'Morning Update',
-          timeWindow: '09:00 - 12:00',
-          icon: 'Sunrise',
-          color: 'text-amber-600',
-          bgColor: 'bg-amber-50',
-          borderColor: 'border-amber-200'
-        };
-      case 'afternoon':
-        return {
-          title: 'Afternoon Update',
-          timeWindow: '12:00 - 17:00',
-          icon: 'Sun',
-          color: 'text-orange-600',
-          bgColor: 'bg-orange-50',
-          borderColor: 'border-orange-200'
-        };
-      case 'evening':
-        return {
-          title: 'Evening Update',
-          timeWindow: '17:00 - 20:00',
-          icon: 'Sunset',
-          color: 'text-purple-600',
-          bgColor: 'bg-purple-50',
-          borderColor: 'border-purple-200'
-        };
-      default:
-        return {
-          title: 'Task Update',
-          timeWindow: '',
-          icon: 'Clock',
-          color: 'text-gray-600',
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-200'
-        };
-    }
+  const getSlotConfig = (hour) => {
+    const isSubmitted = slot?.status === 'completed';
+    
+    return {
+      title: `${hour}:00 Update`,
+      timeWindow: `${hour.toString().padStart(2, '0')}:00 - ${(hour + 1).toString().padStart(2, '0')}:00`,
+      icon: 'Clock',
+      color: isSubmitted ? 'text-green-600' : 'text-yellow-600',
+      bgColor: isSubmitted ? 'bg-green-50' : 'bg-yellow-50',
+      borderColor: isSubmitted ? 'border-green-300' : 'border-yellow-300'
+    };
   };
 
-  const config = getSlotConfig(slot?.type);
+  const config = getSlotConfig(slot?.hour);
 
   const getStatusBadge = () => {
     if (slot?.status === 'completed') {
       return (
         <div className="flex items-center space-x-1 text-success text-xs font-medium">
           <Icon name="CheckCircle" size={14} />
-          <span>Completed</span>
-        </div>
-      );
-    }
-    
-    if (slot?.status === 'overdue') {
-      return (
-        <div className="flex items-center space-x-1 text-error text-xs font-medium">
-          <Icon name="AlertCircle" size={14} />
-          <span>Overdue</span>
-        </div>
-      );
-    }
-    
-    if (timeRemaining && timeRemaining > 0) {
-      const hours = Math.floor(timeRemaining / 60);
-      const minutes = timeRemaining % 60;
-      return (
-        <div className="flex items-center space-x-1 text-warning text-xs font-medium">
-          <Icon name="Timer" size={14} />
-          <span>{hours}h {minutes}m left</span>
+          <span>Submitted</span>
         </div>
       );
     }
     
     return (
-      <div className="flex items-center space-x-1 text-muted-foreground text-xs font-medium">
+      <div className="flex items-center space-x-1 text-warning text-xs font-medium">
         <Icon name="Clock" size={14} />
         <span>Pending</span>
       </div>
@@ -100,7 +51,7 @@ const TaskSlotCard = ({
     
     setIsSubmitting(true);
     try {
-      await onUpdate(slot?.type, taskDescription?.trim());
+      await onUpdate(slot?.hour, taskDescription?.trim());
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update task:', error);
@@ -148,9 +99,8 @@ const TaskSlotCard = ({
               placeholder="Describe your tasks and progress for this time slot..."
               value={taskDescription}
               onChange={(e) => setTaskDescription(e?.target?.value)}
-              rows={4}
+              rows={3}
               required
-              className="resize-none"
             />
             <div className="flex items-center space-x-2">
               <Button
@@ -181,7 +131,12 @@ const TaskSlotCard = ({
           <div className="space-y-3">
             <div className="min-h-[100px] p-4 bg-muted rounded-lg">
               {slot?.description ? (
-                <p className="text-sm text-foreground whitespace-pre-wrap">{slot?.description}</p>
+                <p className="text-sm text-foreground overflow-hidden" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 4,
+                  WebkitBoxOrient: 'vertical',
+                  wordBreak: 'break-word'
+                }}>{slot?.description}</p>
               ) : (
                 <p className="text-sm text-muted-foreground italic">No update provided yet</p>
               )}

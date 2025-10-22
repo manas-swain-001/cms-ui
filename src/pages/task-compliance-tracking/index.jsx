@@ -17,6 +17,7 @@ const TaskComplianceTracking = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('personal'); // personal, team
   const [isLoading, setIsLoading] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState({ left: 0, right: 0 });
 
   // Mock user data
   const currentUser = {
@@ -26,30 +27,26 @@ const TaskComplianceTracking = () => {
     team: 'Development Team A'
   };
 
-  // Mock personal task data
-  const [personalTasks, setPersonalTasks] = useState({
-    morning: {
-      type: 'morning',
-      status: 'completed',
-      description: `Completed code review for user authentication module\nFixed 3 critical bugs in payment gateway integration\nUpdated API documentation for new endpoints`,
-      updatedAt: new Date(2025, 8, 12, 10, 30),
-      updatedBy: 'Rajesh Kumar'
-    },
-    afternoon: {
-      type: 'afternoon',
-      status: 'pending',
-      description: '',
-      updatedAt: null,
-      updatedBy: null
-    },
-    evening: {
-      type: 'evening',
-      status: 'pending',
-      description: '',
-      updatedAt: null,
-      updatedBy: null
+  // Generate hourly task slots (24 hours)
+  const generateHourlySlots = () => {
+    const slots = [];
+    for (let hour = 0; hour < 24; hour++) {
+      // Mock data - first few hours completed, rest pending
+      const isSubmitted = hour < 6; // First 6 hours completed
+      const hasDescription = isSubmitted;
+      
+      slots.push({
+        hour: hour,
+        status: isSubmitted ? 'completed' : 'pending',
+        description: hasDescription ? `Hourly update for ${hour}:00 - Completed tasks and progress updates` : '',
+        updatedAt: isSubmitted ? new Date(Date.now() - (6 - hour) * 60 * 60 * 1000) : null,
+        updatedBy: isSubmitted ? 'Rajesh Kumar' : null
+      });
     }
-  });
+    return slots;
+  };
+
+  const [personalTasks, setPersonalTasks] = useState(generateHourlySlots());
 
   // Mock team data
   const [teamData] = useState([
@@ -105,63 +102,29 @@ const TaskComplianceTracking = () => {
     }
   ]);
 
-  // Calculate current time window
-  const getCurrentTimeWindow = () => {
-    const now = new Date();
-    const currentHour = now?.getHours();
-    
-    if (currentHour >= 9 && currentHour < 12) {
-      return { slot: 'morning', remaining: (12 - currentHour) * 60 - now?.getMinutes(), isActive: true };
-    } else if (currentHour >= 12 && currentHour < 17) {
-      return { slot: 'afternoon', remaining: (17 - currentHour) * 60 - now?.getMinutes(), isActive: true };
-    } else if (currentHour >= 17 && currentHour < 20) {
-      return { slot: 'evening', remaining: (20 - currentHour) * 60 - now?.getMinutes(), isActive: true };
-    }
-    return { slot: null, remaining: 0, isActive: false };
-  };
-
-  const [currentWindow, setCurrentWindow] = useState(getCurrentTimeWindow());
-
-  // Update time window every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWindow(getCurrentTimeWindow());
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Calculate compliance stats
+  // Calculate compliance stats for hourly updates
   const calculateStats = () => {
-    const totalMembers = teamData?.length;
-    const totalSlots = totalMembers * 3; // 3 slots per member
+    const totalHours = personalTasks?.length || 24;
+    const totalMembers = teamData?.length || 5;
     
     let completedUpdates = 0;
     let pendingUpdates = 0;
-    let overdueUpdates = 0;
     
-    teamData?.forEach(member => {
-      member?.slots?.forEach(slot => {
-        switch (slot?.status) {
-          case 'completed':
-            completedUpdates++;
-            break;
-          case 'overdue':
-            overdueUpdates++;
-            break;
-          default:
-            pendingUpdates++;
-        }
-      });
+    personalTasks?.forEach(slot => {
+      if (slot?.status === 'completed') {
+        completedUpdates++;
+      } else {
+        pendingUpdates++;
+      }
     });
     
-    const compliancePercentage = totalSlots > 0 ? Math.round((completedUpdates / totalSlots) * 100) : 0;
+    const compliancePercentage = totalHours > 0 ? Math.round((completedUpdates / totalHours) * 100) : 0;
     
     return {
       totalMembers,
       completedUpdates,
       pendingUpdates,
-      overdueUpdates,
+      overdueUpdates: 0,
       compliancePercentage
     };
   };
@@ -172,25 +135,58 @@ const TaskComplianceTracking = () => {
     completionRate: 12.8
   };
 
-  const handleTaskUpdate = async (slotType, description) => {
+  const handleTaskUpdate = async (hour, description) => {
     setIsLoading(true);
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    setPersonalTasks(prev => ({
-      ...prev,
-      [slotType]: {
-        ...prev?.[slotType],
-        status: 'completed',
-        description,
-        updatedAt: new Date(),
-        updatedBy: currentUser?.name
-      }
-    }));
+    setPersonalTasks(prev => 
+      prev?.map(slot => 
+        slot?.hour === hour 
+          ? {
+              ...slot,
+              status: 'completed',
+              description,
+              updatedAt: new Date(),
+              updatedBy: currentUser?.name
+            }
+          : slot
+      )
+    );
     
     setIsLoading(false);
   };
+
+  const handleScroll = (container) => {
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    
+    setScrollPosition({
+      left: scrollLeft,
+      right: maxScrollLeft - scrollLeft
+    });
+  };
+
+  const scrollLeft = () => {
+    const container = document.getElementById('completed-tasks-scroll');
+    container.scrollBy({ left: -300, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    const container = document.getElementById('completed-tasks-scroll');
+    container.scrollBy({ left: 300, behavior: 'smooth' });
+  };
+
+  // Initialize scroll position on mount
+  useEffect(() => {
+    const container = document.getElementById('completed-tasks-scroll');
+    if (container) {
+      handleScroll(container);
+    }
+  }, [personalTasks]);
 
   const dateOptions = [
     { value: 'today', label: 'Today' },
@@ -214,7 +210,7 @@ const TaskComplianceTracking = () => {
       <main className={`transition-all duration-300 ${
         isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
       } pt-16`}>
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 w-full">
           <Breadcrumb />
           
           {/* Page Header */}
@@ -222,7 +218,7 @@ const TaskComplianceTracking = () => {
             <div>
               <h1 className="text-3xl font-bold text-foreground">Task Compliance Tracking</h1>
               <p className="text-muted-foreground mt-2">
-                Manage daily task updates and monitor team compliance across time slots
+                Manage hourly task updates and monitor compliance across 24-hour periods
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -247,49 +243,75 @@ const TaskComplianceTracking = () => {
             <ComplianceStats stats={stats} trends={trends} />
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex items-center space-x-1 mb-6 bg-muted p-1 rounded-lg w-fit">
-            {tabOptions?.map(tab => (
-              <button
-                key={tab?.id}
-                onClick={() => setActiveTab(tab?.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === tab?.id
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Icon name={tab?.icon} size={16} />
-                <span>{tab?.label}</span>
-              </button>
-            ))}
-          </div>
-
           {/* Content */}
           {activeTab === 'personal' ? (
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-              {/* Time Window Indicator */}
-              <div className="xl:col-span-1">
-                <TimeWindowIndicator
-                  currentSlot={currentWindow?.slot}
-                  timeRemaining={currentWindow?.remaining}
-                  isWithinWindow={currentWindow?.isActive}
-                />
-              </div>
-
+            <div className="w-full space-y-6">
               {/* Task Slots */}
-              <div className="xl:col-span-3 space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {Object.values(personalTasks)?.map(slot => (
-                    <TaskSlotCard
-                      key={slot?.type}
-                      slot={slot}
-                      onUpdate={handleTaskUpdate}
-                      isDisabled={!currentWindow?.isActive && currentWindow?.slot !== slot?.type}
-                      timeRemaining={currentWindow?.slot === slot?.type ? currentWindow?.remaining : null}
-                      userRole={currentUser?.role}
-                    />
-                  ))}
+              <div className="w-full space-y-6">
+                {/* Completed Tasks */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Completed Updates</h3>
+                  <div className="relative">
+                    {/* Left Arrow - Only show if not at the leftmost position */}
+                    {scrollPosition.left > 5 && (
+                      <button
+                        onClick={scrollLeft}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-200 hover:shadow-xl"
+                      >
+                        <Icon name="ChevronLeft" size={20} className="text-gray-600" />
+                      </button>
+                    )}
+                    
+                    {/* Right Arrow - Only show if not at the rightmost position */}
+                    {scrollPosition.right > 5 && (
+                      <button
+                        onClick={scrollRight}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-200 hover:shadow-xl"
+                      >
+                        <Icon name="ChevronRight" size={20} className="text-gray-600" />
+                      </button>
+                    )}
+                    
+                    {/* Scrollable Container */}
+                    <div
+                      id="completed-tasks-scroll"
+                      className="flex gap-6 overflow-x-auto scrollbar-hide pb-2 w-full"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      onScroll={(e) => handleScroll(e.target)}
+                    >
+                      {personalTasks
+                        ?.filter(slot => slot?.status === 'completed')
+                        ?.map(slot => (
+                          <div key={slot?.hour} className="flex-shrink-0 w-80">
+                            <TaskSlotCard
+                              slot={slot}
+                              onUpdate={handleTaskUpdate}
+                              isDisabled={false}
+                              userRole={currentUser?.role}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Upcoming Task */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Next Update</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {personalTasks
+                      ?.filter(slot => slot?.status === 'pending')
+                      ?.slice(0, 1)
+                      ?.map(slot => (
+                        <TaskSlotCard
+                          key={slot?.hour}
+                          slot={slot}
+                          onUpdate={handleTaskUpdate}
+                          isDisabled={false}
+                          userRole={currentUser?.role}
+                        />
+                      ))}
+                  </div>
                 </div>
 
                 {/* Quick Actions */}
@@ -311,22 +333,6 @@ const TaskComplianceTracking = () => {
                       onClick={() => {}}
                     >
                       Copy Yesterday's Tasks
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="Calendar"
-                      onClick={() => {}}
-                    >
-                      Schedule Reminder
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="MessageSquare"
-                      onClick={() => {}}
-                    >
-                      Request Extension
                     </Button>
                   </div>
                 </div>
