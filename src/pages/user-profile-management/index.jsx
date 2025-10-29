@@ -140,9 +140,9 @@ const UserProfileManagement = () => {
     { id: 'profile', label: 'Profile Information', icon: 'User' },
     { id: 'security', label: 'Security Settings', icon: 'Shield' },
     // { id: 'biometric', label: 'Biometric Enrollment', icon: 'Scan' },
-    { id: 'shift', label: 'Shift Assignment', icon: 'Calendar' },
-    { id: 'notifications', label: 'Notifications', icon: 'Bell' },
-    { id: 'theme', label: 'Theme & Appearance', icon: 'Palette' }
+    // { id: 'shift', label: 'Shift Assignment', icon: 'Calendar' },
+    // { id: 'notifications', label: 'Notifications', icon: 'Bell' },
+    // { id: 'theme', label: 'Theme & Appearance', icon: 'Palette' }
   ];
 
   const { mutate: GetUserById } = useMutation({

@@ -27,4 +27,26 @@ const getCurrentStatus = async () => {
     }
 }
 
-export { punchIn, punchOut, getCurrentStatus };
+
+const getRecords = async (headers) => {
+    try {
+        const res = await request().get(endpoint.attendance.records, undefined, { ...headers });
+        return res?.data?.attendanceRecords || [];
+    } catch (error) {
+        throw error;
+    }
+}
+
+const exportExcel = async (headers) => {
+    try {
+        const requester = request({ responseType: 'blob' });
+        const res = await requester.get(endpoint.attendance.exportExcel, undefined, { ...headers });
+        return res;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+
+export { punchIn, punchOut, getCurrentStatus, getRecords, exportExcel };

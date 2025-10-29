@@ -1,60 +1,39 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import Table from '../../../components/Table';
+import { convertToIndianDateParts, formatDateToDDMMYYYY } from '../../../utils/function';
+import { exportExcel } from '../../../api/attendance';
+import { useGlobalContext } from '../../../context';
+import { toast } from 'react-toastify';
+import moment from 'moment';
 
-const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
+const AttendanceHistory = ({ attendanceRecords }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
-  const [filters, setFilters] = useState({
-    dateRange: 'last_30_days',
-    status: 'all',
-    office: 'all',
-    searchTerm: ''
-  });
-
-  const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'present', label: 'Present' },
-    { value: 'absent', label: 'Absent' },
-    { value: 'late', label: 'Late' },
-    { value: 'early_out', label: 'Early Out' },
-    { value: 'leave', label: 'On Leave' }
-  ];
-
-  const dateRangeOptions = [
-    { value: 'today', label: 'Today' },
-    { value: 'yesterday', label: 'Yesterday' },
-    { value: 'last_7_days', label: 'Last 7 Days' },
-    { value: 'last_30_days', label: 'Last 30 Days' },
-    { value: 'this_month', label: 'This Month' },
-    { value: 'last_month', label: 'Last Month' }
-  ];
-
-  const officeOptions = [
-    { value: 'all', label: 'All Offices' },
-    { value: 'bhubaneswar', label: 'Bhubaneswar Office' },
-    { value: 'mumbai', label: 'Mumbai Office' },
-    { value: 'delhi', label: 'Delhi Office' }
-  ];
-
-  const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-    setCurrentPage(1);
-  };
+  const [exportRange, setExportRange] = useState('this_month');
+  const [isExporting, setIsExporting] = useState(false);
+  
+  const { userDataContext } = useGlobalContext();
 
   const getStatusBadge = (record) => {
-    if (record?.status === 'present') {
-      if (record?.isLate && record?.isEarlyOut) {
+    const lateMinutes = calculateLateMinutes(record?.sessions);
+    const earlyMinutes = calculateEarlyMinutes(record?.sessions);
+    
+    if (record?.status === 'present' || record?.status === 'partial') {
+      if (lateMinutes && earlyMinutes) {
         return { label: 'Late & Early Out', color: 'bg-error text-error-foreground', icon: 'AlertTriangle' };
-      } else if (record?.isLate) {
+      } else if (lateMinutes) {
         return { label: 'Late', color: 'bg-warning text-warning-foreground', icon: 'Clock' };
-      } else if (record?.isEarlyOut) {
+      } else if (earlyMinutes) {
         return { label: 'Early Out', color: 'bg-warning text-warning-foreground', icon: 'Clock' };
       }
+      
+      if (record?.status === 'partial') {
+        return { label: 'Partial', color: 'bg-warning text-warning-foreground', icon: 'AlertCircle' };
+      }
+      
       return { label: 'Present', color: 'bg-success text-success-foreground', icon: 'CheckCircle' };
     }
     
@@ -72,33 +51,45 @@ const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
 
   const formatTime = (timeString) => {
     if (!timeString) return '--:--';
-    return new Date(`2000-01-01T${timeString}`)?.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    return moment(timeString).format('hh:mm A');
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString)?.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+    const { date, day } = convertToIndianDateParts(dateString);
+    return { date, day };
   };
 
-  const calculateWorkingHours = (checkIn, checkOut) => {
-    if (!checkIn || !checkOut) return '--';
+  const calculateWorkingHours = (totalHours) => {
+    if (!totalHours || totalHours === 0) return '--';
     
-    const checkInTime = new Date(`2000-01-01T${checkIn}`);
-    const checkOutTime = new Date(`2000-01-01T${checkOut}`);
-    const diffMs = checkOutTime - checkInTime;
-    const diffHours = diffMs / (1000 * 60 * 60);
-    
-    const hours = Math.floor(diffHours);
-    const minutes = Math.floor((diffHours - hours) * 60);
+    const hours = Math.floor(totalHours);
+    const minutes = Math.round((totalHours - hours) * 60);
     
     return `${hours}h ${minutes}m`;
+  };
+
+  const calculateLateMinutes = (sessions) => {
+    if (!sessions || sessions.length === 0) return null;
+    
+    const firstSession = sessions[0];
+    // Look for late minutes in checkIn object
+    if (firstSession?.checkIn?.isLate && firstSession?.checkIn?.lateMinutes > 0) {
+      return firstSession.checkIn.lateMinutes;
+    }
+    
+    return null;
+  };
+
+  const calculateEarlyMinutes = (sessions) => {
+    if (!sessions || sessions.length === 0) return null;
+    
+    const lastSession = sessions[sessions.length - 1];
+    // Look for early minutes in checkOut object
+    if (lastSession?.checkOut?.isEarly && lastSession?.checkOut?.earlyMinutes > 0) {
+      return lastSession.checkOut.earlyMinutes;
+    }
+    
+    return null;
   };
 
   // Pagination
@@ -111,6 +102,190 @@ const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
+  // Export date range options
+  const exportRangeOptions = [
+    { value: 'today', label: 'Today' },
+    { value: 'last_7_days', label: 'Last 7 Days' },
+    { value: 'this_month', label: 'This Month' },
+    { value: 'last_month', label: 'Last Month' }
+  ];
+
+  // Calculate date range based on selection
+  const getDateRange = (range) => {
+    const today = new Date();
+    let startDate, endDate;
+
+    switch (range) {
+      case 'today':
+        startDate = new Date(today);
+        endDate = new Date(today);
+        break;
+
+      case 'last_7_days':
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6);
+        endDate = new Date(today);
+        break;
+
+      case 'this_month':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today);
+        break;
+
+      case 'last_month':
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+
+      default:
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today);
+    }
+
+    return {
+      startDate: formatDateToDDMMYYYY(startDate),
+      endDate: formatDateToDDMMYYYY(endDate)
+    };
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    if (!userDataContext?.id) {
+      toast.error('User not found');
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      const { startDate, endDate } = getDateRange(exportRange);
+      
+      const headers = {
+        'start-date': startDate,
+        'end-date': endDate,
+        'user-id': userDataContext.id
+      };
+
+      const blob = await exportExcel(headers);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename
+      const fileName = `Attendance_Report_${startDate.replace(/\//g, '-')}_to_${endDate.replace(/\//g, '-')}.xlsx`;
+      link.setAttribute('download', fileName);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(error?.message || 'Failed to export attendance records');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Define table columns
+  const columns = [
+    {
+      header: 'Date',
+      key: 'date',
+      render: (value, record) => {
+        const { date: formattedDate, day } = formatDate(record?.date);
+        return (
+          <div>
+            <div className="text-sm font-medium text-foreground">
+              {formattedDate}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {day}
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Check In',
+      key: 'checkIn',
+      render: (value, record) => {
+        const checkInTime = record?.sessionSummary?.firstCheckIn || record?.sessions?.[0]?.checkIn?.time;
+        const lateMinutes = calculateLateMinutes(record?.sessions);
+        return (
+          <div>
+            <div className="text-sm text-foreground">
+              {formatTime(checkInTime)}
+            </div>
+            {lateMinutes && (
+              <div className="text-xs text-warning flex items-center space-x-1">
+                <Icon name="Clock" size={10} />
+                <span>Late by {lateMinutes} min</span>
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Check Out',
+      key: 'checkOut',
+      render: (value, record) => {
+        const checkOutTime = record?.sessionSummary?.lastCheckOut || record?.sessions?.[record?.sessions?.length - 1]?.checkOut?.time;
+        const earlyMinutes = calculateEarlyMinutes(record?.sessions);
+        return (
+          <div>
+            <div className="text-sm text-foreground">
+              {formatTime(checkOutTime)}
+            </div>
+            {earlyMinutes && (
+              <div className="text-xs text-warning flex items-center space-x-1">
+                <Icon name="Clock" size={10} />
+                <span>Early by {earlyMinutes} min</span>
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Working Hours',
+      key: 'workingHours',
+      render: (value, record) => {
+        const workingHours = calculateWorkingHours(record?.workSummary?.effectiveHours);
+        return (
+          <div className="text-sm text-foreground">
+            {workingHours}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Status',
+      key: 'status',
+      render: (value, record) => {
+        const statusBadge = getStatusBadge(record);
+        const isWorkFromHome = record?.workLocation === 'home' || record?.workLocation === 'remote';
+        return (
+          <div className="flex flex-col gap-1">
+            <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${statusBadge?.color}`}>
+              <Icon name={statusBadge?.icon} size={10} />
+              <span>{statusBadge?.label}</span>
+            </span>
+            {isWorkFromHome && (
+              <span className="text-xs text-muted-foreground">Work From Home</span>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
+
   return (
     <div className="bg-card rounded-lg border border-border">
       {/* Header */}
@@ -119,7 +294,7 @@ const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
           <h3 className="text-lg font-semibold text-foreground">Attendance History</h3>
           
           {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-3">
+          {/* <div className="flex flex-col md:flex-row gap-3">
             <Input
               type="search"
               placeholder="Search records..."
@@ -148,125 +323,17 @@ const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
               onChange={(value) => handleFilterChange('office', value)}
               className="w-full md:w-36"
             />
-          </div>
+          </div> */}
         </div>
       </div>
+      
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Check In</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Check Out</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Working Hours</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Location</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Verification</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentRecords?.map((record, index) => {
-              const statusBadge = getStatusBadge(record);
-              return (
-                <tr key={record?.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                  <td className="p-4">
-                    <div className="text-sm font-medium text-foreground">
-                      {formatDate(record?.date)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(record.date)?.toLocaleDateString('en-IN', { weekday: 'short' })}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm text-foreground">
-                      {formatTime(record?.checkIn)}
-                    </div>
-                    {record?.isLate && (
-                      <div className="text-xs text-warning flex items-center space-x-1">
-                        <Icon name="Clock" size={10} />
-                        <span>Late by {record?.lateBy}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm text-foreground">
-                      {formatTime(record?.checkOut)}
-                    </div>
-                    {record?.isEarlyOut && (
-                      <div className="text-xs text-warning flex items-center space-x-1">
-                        <Icon name="Clock" size={10} />
-                        <span>Early by {record?.earlyBy}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm text-foreground">
-                      {calculateWorkingHours(record?.checkIn, record?.checkOut)}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${statusBadge?.color}`}>
-                      <Icon name={statusBadge?.icon} size={10} />
-                      <span>{statusBadge?.label}</span>
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm text-foreground">{record?.office}</div>
-                    {record?.distance && (
-                      <div className="text-xs text-muted-foreground">
-                        {record?.distance}m from office
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      {record?.biometricVerified ? (
-                        <div className="flex items-center space-x-1 text-success">
-                          <Icon name="CheckCircle" size={12} />
-                          <span className="text-xs">Verified</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-1 text-error">
-                          <Icon name="XCircle" size={12} />
-                          <span className="text-xs">Failed</span>
-                        </div>
-                      )}
-                      {record?.managerApproved && (
-                        <div className="flex items-center space-x-1 text-primary">
-                          <Icon name="Shield" size={12} />
-                          <span className="text-xs">Approved</span>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        <Icon name="Eye" size={14} />
-                      </Button>
-                      {record?.hasException && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-warning"
-                        >
-                          <Icon name="AlertTriangle" size={14} />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <Table 
+        data={currentRecords} 
+        columns={columns}
+        className="border-0 rounded-none"
+      />
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="p-4 border-t border-border">
@@ -314,6 +381,43 @@ const AttendanceHistory = ({ attendanceRecords, onFilterChange }) => {
           </div>
         </div>
       )}
+
+      {/* Export Section */}
+      <div className="p-4 border-t border-border bg-muted/20">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Icon name="Download" size={20} className="text-primary" />
+            <span className="text-sm font-medium text-foreground">Export Attendance Report</span>
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Select
+              options={exportRangeOptions}
+              value={exportRange}
+              onChange={(value) => setExportRange(value)}
+              className="w-full md:w-48"
+            />
+            
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              {isExporting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="FileSpreadsheet" size={16} />
+                  <span>Export Excel</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

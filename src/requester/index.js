@@ -141,6 +141,7 @@ export class AxiosRequester {
             responseType === "blob" ||
             contentType.includes("application/octet-stream") ||
             contentType.includes("application/pdf") ||
+            contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
             contentType.startsWith("image/") ||
             contentType.startsWith("video/") ||
             contentType.startsWith("audio/")

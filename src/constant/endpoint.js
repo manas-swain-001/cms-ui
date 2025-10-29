@@ -3,6 +3,10 @@ export const endpoint = {
     punchIn: "attendance/punch-in",
     punchOut: "attendance/punch-out",
     getCurrentStatus: "attendance/today",
+    attendance: {
+        records: 'attendance/records',
+        exportExcel: 'attendance/export-excel'
+    },
     users: {
         getAllUsers: "users",
         saveUser: "users/save",

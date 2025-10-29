@@ -153,10 +153,6 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
         <h2 className="text-2xl font-semibold text-foreground mb-2">Attendance Punch</h2>
         <div className="flex items-center justify-center space-x-4 text-sm">
           <div className="flex items-center space-x-2">
-            <Icon name="MapPin" size={16} className={getGpsStatusColor(gpsStatus?.accuracy)} />
-            <span className="text-muted-foreground">GPS: {gpsStatus?.accuracy}</span>
-          </div>
-          <div className="flex items-center space-x-2">
             <Icon name="Navigation" size={16} className="text-primary" />
             <span className="text-muted-foreground">{officeDistance} from office</span>
           </div>
@@ -199,7 +195,7 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
         </div>
       )}
       {/* Biometric Interface */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h3 className="text-lg font-medium text-foreground mb-4 text-center">Face Verification</h3>
         {!isCapturing ? (
           <div className="text-center">
@@ -294,7 +290,7 @@ const PunchInterface = ({ onPunchAction, currentStatus, gpsStatus, officeDistanc
             </p>
           </div>
         )}
-      </div>
+      </div> */}   {/* not in current milestone */}
       {/* Punch Button */}
       <div className="text-center">
         <Button

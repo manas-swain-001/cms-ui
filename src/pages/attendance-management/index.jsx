@@ -16,12 +16,13 @@ import { toast } from 'react-toastify';
 import secureStorage from 'hooks/secureStorage';
 
 const AttendanceManagement = () => {
+  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('punch'); // punch, calendar, history
 
 
-  const { gpsStatus, formattedDistance, refetchCurrentStatus } = useAttendanceManagement();
+  const { gpsStatus, formattedDistance, refetchCurrentStatus, GetRecords } = useAttendanceManagement();
   const { currentStatus, setCurrentStatus } = useGlobalContext();
 
   // Mock attendance data
@@ -72,82 +73,6 @@ const AttendanceManagement = () => {
       isLate: true,
       lateBy: '30 min',
       isEarlyOut: false
-    }
-  ];
-
-  const attendanceRecords = [
-    {
-      id: 1,
-      date: '2024-12-12',
-      checkIn: '09:15:00',
-      checkOut: '18:30:00',
-      status: 'present',
-      isLate: true,
-      lateBy: '15 min',
-      isEarlyOut: false,
-      office: 'Bhubaneswar Office',
-      distance: '45m',
-      biometricVerified: true,
-      managerApproved: false,
-      hasException: true
-    },
-    {
-      id: 2,
-      date: '2024-12-11',
-      checkIn: '09:00:00',
-      checkOut: '17:45:00',
-      status: 'present',
-      isLate: false,
-      isEarlyOut: true,
-      earlyBy: '15 min',
-      office: 'Bhubaneswar Office',
-      distance: '32m',
-      biometricVerified: true,
-      managerApproved: true,
-      hasException: true
-    },
-    {
-      id: 3,
-      date: '2024-12-10',
-      checkIn: '08:45:00',
-      checkOut: '18:00:00',
-      status: 'present',
-      isLate: false,
-      isEarlyOut: false,
-      office: 'Bhubaneswar Office',
-      distance: '28m',
-      biometricVerified: true,
-      managerApproved: false,
-      hasException: false
-    },
-    {
-      id: 4,
-      date: '2024-12-09',
-      checkIn: null,
-      checkOut: null,
-      status: 'absent',
-      isLate: false,
-      isEarlyOut: false,
-      office: 'Bhubaneswar Office',
-      distance: null,
-      biometricVerified: false,
-      managerApproved: false,
-      hasException: true
-    },
-    {
-      id: 5,
-      date: '2024-12-06',
-      checkIn: '09:30:00',
-      checkOut: '18:15:00',
-      status: 'present',
-      isLate: true,
-      lateBy: '30 min',
-      isEarlyOut: false,
-      office: 'Bhubaneswar Office',
-      distance: '67m',
-      biometricVerified: false,
-      managerApproved: true,
-      hasException: true
     }
   ];
 
@@ -206,11 +131,6 @@ const AttendanceManagement = () => {
     // Handle sync operations
   };
 
-  const handleFilterChange = (filters) => {
-    console.log('Filter change:', filters);
-    // Handle attendance history filtering
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -234,7 +154,7 @@ const AttendanceManagement = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            {/* <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <div className="text-center">
                 <div className="text-lg font-semibold text-success">95.2%</div>
                 <div className="text-xs text-muted-foreground">This Month</div>
@@ -247,7 +167,7 @@ const AttendanceManagement = () => {
                 <div className="text-lg font-semibold text-warning">2</div>
                 <div className="text-xs text-muted-foreground">Exceptions</div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Mobile Tab Navigation */}
@@ -261,14 +181,14 @@ const AttendanceManagement = () => {
                 <Icon name="Clock" size={16} className="inline mr-2" />
                 Punch
               </button>
-              <button
+              {/* <button
                 onClick={() => setActiveTab('calendar')}
                 className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'calendar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
               >
                 <Icon name="Calendar" size={16} className="inline mr-2" />
                 Calendar
-              </button>
+              </button> */}
               <button
                 onClick={() => setActiveTab('history')}
                 className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeTab === 'history' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
@@ -292,22 +212,21 @@ const AttendanceManagement = () => {
                   officeDistance={formattedDistance}
                 />
 
-                <SyncStatusPanel onSyncAction={handleSyncAction} />
+                {/* <SyncStatusPanel onSyncAction={handleSyncAction} /> */}
               </div>
             </div>
 
             {/* Right Column - Calendar and History */}
             <div className="col-span-7">
               <div className="space-y-6">
-                <AttendanceCalendar
+                {/* <AttendanceCalendar
                   attendanceData={attendanceData}
                   selectedDate={selectedDate}
                   onDateSelect={setSelectedDate}
-                />
+                /> */}
 
                 <AttendanceHistory
-                  attendanceRecords={attendanceRecords}
-                  onFilterChange={handleFilterChange}
+                  attendanceRecords={GetRecords || []}
                 />
               </div>
             </div>
@@ -323,7 +242,7 @@ const AttendanceManagement = () => {
                   gpsStatus={gpsStatus}
                   officeDistance={formattedDistance}
                 />
-                <SyncStatusPanel onSyncAction={handleSyncAction} />
+                {/* <SyncStatusPanel onSyncAction={handleSyncAction} /> */}
               </div>
             )}
 
@@ -337,8 +256,7 @@ const AttendanceManagement = () => {
 
             {activeTab === 'history' && (
               <AttendanceHistory
-                attendanceRecords={attendanceRecords}
-                onFilterChange={handleFilterChange}
+                attendanceRecords={GetRecords || []}
               />
             )}
           </div>

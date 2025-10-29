@@ -25,14 +25,14 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       path: '/attendance-management',
       icon: 'Clock',
       roles: ['admin', 'manager', 'employee', 'sales', 'field'],
-      badge: syncStatus === 'syncing' ? 'sync' : null
+      badge: null
     },
     {
       label: 'Tasks',
       path: '/task-compliance-tracking',
       icon: 'CheckSquare',
       roles: ['admin', 'manager', 'employee'],
-      badge: 3 // pending tasks count
+      badge: null
     },
     {
       label: 'Administration',
@@ -189,7 +189,7 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       </nav>
 
       {/* Sync Status Indicator */}
-      {!isCollapsed && (
+      {/* {!isCollapsed && (
         <div className="px-4 py-4 border-t border-border">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">System Status</span>
@@ -203,7 +203,7 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Collapse Toggle (Desktop) */}
       <div className="hidden lg:block px-4 py-4 border-t border-border">

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getCurrentStatus } from 'api/attendance';
+import { getCurrentStatus, getRecords } from 'api/attendance';
 import { useGlobalContext } from 'context';
 import constants from 'constant';
+import { formatDateToDDMMYYYY } from 'utils/function';
 
 const officeLocation = constants.officeLocation;
 
@@ -19,10 +20,37 @@ export const useAttendanceManagement = () => {
 
     const { userDataContext, setCurrentStatus } = useGlobalContext();
 
+    const userId = userDataContext?.id
+
+    const payloadData = useMemo(() => {
+        const today = new Date();
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - 5);
+        return {
+            page: 1,
+            limit: 10,
+            'start-date': formatDateToDDMMYYYY(startDate),
+            'end-date': formatDateToDDMMYYYY(today),
+            'user-id': userId,
+        };
+    }, [userId]);
+
     const { data: currentStatusData, refetch: refetchCurrentStatus } = useQuery({
         queryKey: ['currentStatusData'],
         queryFn: getCurrentStatus,
     });
+
+    const { data: GetRecords, refetch: GetRecordsStatus } = useQuery({
+        queryKey: ['getRecords'],
+        queryFn: () => getRecords(payloadData),
+        enabled: !!userId
+    });
+
+    useEffect(() => {
+        if (Array.isArray(GetRecords)) {
+            console.log('GetRecords :::: ', GetRecords);
+        }
+    }, [GetRecords])
 
     useEffect(() => {
         if (currentStatusData) {
@@ -75,14 +103,20 @@ export const useAttendanceManagement = () => {
     }
 
     const getCurrentPosition = () => {
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     // console.log("Position: ", position);
                     const userCoords = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
+                        latitude: (position.coords.latitude).toFixed(6),
+                        longitude: (position.coords.longitude).toFixed(6)
                     };
+
+                    /* console.log(`
+                        userCoords :::: ${JSON.stringify(userCoords)}
+                        officeLocation :::: ${JSON.stringify(officeLocation)}
+                        `) */
 
                     setGpsStatus({
                         latitude: userCoords.latitude,
@@ -94,6 +128,11 @@ export const useAttendanceManagement = () => {
 
                     const distance = calculateDistance(officeLocation, userCoords);
                     const formatted = formatDistance(distance);
+
+                    /* console.log(`
+                        distance :::: ${distance}
+                        formatted :::: ${formatted}
+                        `) */
 
                     setOfficeDistance(distance);
                     setFormattedDistance(formatted);
@@ -149,5 +188,6 @@ export const useAttendanceManagement = () => {
         formattedDistance, // Formatted string (e.g., "150 m" or "1.5 km")
         setOfficeDistance,
         refetchCurrentStatus,
+        GetRecords,
     }
 }

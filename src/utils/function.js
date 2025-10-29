@@ -8,3 +8,12 @@ export function formatDateToDDMMYYYY(dateString) {
     // Handle invalid dates (moment returns "Invalid date" as a string)
     return formatted === 'Invalid date' ? '' : formatted;
 }
+
+export function convertToIndianDateParts(dateString) {
+    if (!dateString) return { date: '', day: '' };
+    
+    const formattedDate = moment(dateString).format("DD MMM YYYY");
+    const formattedDay = moment(dateString).format("ddd");
+
+    return { date: formattedDate, day: formattedDay };
+}
