@@ -211,7 +211,7 @@ const TaskComplianceTracking = () => {
                 Manage hourly task updates and monitor compliance across 24-hour periods
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            {/* <div className="flex items-center space-x-3">
               <Select
                 options={dateOptions}
                 value="today"
@@ -225,7 +225,7 @@ const TaskComplianceTracking = () => {
               >
                 Export Report
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* Stats Overview */}

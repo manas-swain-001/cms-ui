@@ -23,8 +23,8 @@ const Routes = () => {
   const protectedRoutes = [
     { path: '/main-dashboard', component: <MainDashboard /> },
     { path: '/user-profile-management', component: <UserProfileManagement /> },
-    { path: '/task-compliance-tracking', component: <TaskComplianceTracking /> },
-    { path: '/attendance-management', component: <AttendanceManagement /> },
+    { path: '/task-compliance-tracking', component: <TaskComplianceTracking />, excludedRoles: ['admin'] },
+    { path: '/attendance-management', component: <AttendanceManagement />, excludedRoles: ['admin'] },
 
     { path: '/control-panel-settings', component: <ControlPanelSettings />, requiredRole: 'admin' },
     { path: '/manage-employees', component: <ManageEmployees />, requiredRole: 'admin' },
@@ -58,7 +58,7 @@ const Routes = () => {
               key={route.path}
               path={route.path}
               element={
-                <ProtectedRoute requiredRole={route.requiredRole}>
+                <ProtectedRoute requiredRole={route.requiredRole} excludedRoles={route.excludedRoles}>
                   {route.component}
                 </ProtectedRoute>
               }

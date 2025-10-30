@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Table from '../../../components/Table';
+import Icon from '../../../components/AppIcon';
 import { formatDateToDDMMYYYY } from 'utils/function';
+import { exportExcel } from '../../../api/attendance';
+import { toast } from 'react-toastify';
 
 const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
 
@@ -10,6 +13,7 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState(userProfile);
   const [errors, setErrors] = useState({});
+  const [exportingEmployeeId, setExportingEmployeeId] = useState(null);
 
   // Update form data when userProfile changes (after successful update)
   useEffect(() => {
@@ -48,19 +52,42 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
       header: 'Actions',
       headerClassName: 'text-center',
       cellClassName: 'text-center',
-      render: (value, row, rowIndex) => (
-        <div className="flex items-center justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            iconName="Edit"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEditEmployee(row);
-            }}
-          />
-        </div>
-      )
+      render: (value, row, rowIndex) => {
+        const employeeId = row.id || row._id;
+        const isExporting = exportingEmployeeId === employeeId;
+        
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              iconName="Edit"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditEmployee(row);
+              }}
+              title="Edit Employee"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExportAttendance(row);
+              }}
+              disabled={isExporting}
+              title="Download Attendance Report (This Month)"
+              className="text-primary hover:text-primary/80"
+            >
+              {isExporting ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              ) : (
+                <Icon name="Download" size={16} />
+              )}
+            </Button>
+          </div>
+        );
+      }
     }
   ];
 
@@ -229,6 +256,56 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
     setEditingEmployee(null);
     setErrors({});
     setIsEditing(true);
+  };
+
+  // Handle export attendance for employee
+  const handleExportAttendance = async (employee) => {
+    const employeeId = employee.id || employee._id;
+    
+    if (!employeeId) {
+      toast.error('Employee ID not found');
+      return;
+    }
+
+    try {
+      setExportingEmployeeId(employeeId);
+      
+      // Get current month dates
+      const today = new Date();
+      const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endDate = new Date(today);
+      
+      const headers = {
+        'start-date': formatDateToDDMMYYYY(startDate),
+        'end-date': formatDateToDDMMYYYY(endDate),
+        'user-id': employeeId
+      };
+
+      const blob = await exportExcel(headers);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename
+      const fileName = `${employee.firstName}_${employee.lastName}_Attendance_${today.getMonth() + 1}_${today.getFullYear()}.xlsx`;
+      link.setAttribute('download', fileName);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Attendance report downloaded for ${employee.firstName} ${employee.lastName}`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(error?.message || 'Failed to export attendance report');
+    } finally {
+      setExportingEmployeeId(null);
+    }
   };
 
   return (

@@ -203,32 +203,32 @@ const MainDashboard = () => {
               />
 
               {/* Sales Widget - Show for admin, manager, sales */}
-              {(['admin', 'manager', 'sales']?.includes(userRole)) && (
+              {/* {(['admin', 'manager', 'sales']?.includes(userRole)) && (
                 <SalesWidget 
                   userRole={userRole} 
                   salesData={mockData?.sales} 
                 />
-              )}
+              )} */}
 
               {/* Field Visit Widget - Show for admin, manager, field */}
-              {(['admin', 'manager', 'field']?.includes(userRole)) && (
+              {/* {(['admin', 'manager', 'field']?.includes(userRole)) && (
                 <FieldVisitWidget 
                   userRole={userRole} 
                   fieldData={mockData?.field} 
                 />
-              )}
+              )} */}
 
               {/* System Health Widget - Admin only */}
-              <SystemHealthWidget userRole={userRole} />
+              {/* <SystemHealthWidget userRole={userRole} /> */}
             </div>
 
             {/* Bottom Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Notifications Panel */}
-              <NotificationPanel userRole={userRole} />
+              {/* <NotificationPanel userRole={userRole} /> */}
 
               {/* Quick Actions Panel */}
-              <QuickActionsPanel userRole={userRole} />
+              {/* <QuickActionsPanel userRole={userRole} /> */}
             </div>
 
             {/* Footer Info */}

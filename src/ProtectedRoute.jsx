@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import secureStorage from "hooks/secureStorage";
 import { useGlobalContext } from "context";
 
-export const ProtectedRoute = ({ children, requiredRole = null }) => {
+export const ProtectedRoute = ({ children, requiredRole = null, excludedRoles = [] }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { userRoleContext } = useGlobalContext();
@@ -23,8 +23,14 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
                 replace: true,
                 state: { from: location }
             });
+        } else if (excludedRoles.length > 0 && excludedRoles.includes(userRoleContext)) {
+            console.log('ProtectedRoute - User role is excluded from this page, redirecting to dashboard');
+            navigate('/main-dashboard', { 
+                replace: true,
+                state: { from: location }
+            });
         }
-    }, [token, userRoleContext, requiredRole, navigate, location]);
+    }, [token, userRoleContext, requiredRole, excludedRoles, navigate, location]);
 
     // If no token, don't render anything (let the redirect happen)
     if (!token) {
@@ -47,6 +53,27 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
                     <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
                     <p className="text-muted-foreground mb-4">
                         You don't have permission to access this page. {requiredRole} access required.
+                    </p>
+                    <button 
+                        onClick={() => navigate('/main-dashboard')}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                    >
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // If token exists but user role is excluded
+    if (excludedRoles.length > 0 && excludedRoles.includes(userRoleContext)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-6xl mb-4">🚫</div>
+                    <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
+                    <p className="text-muted-foreground mb-4">
+                        You don't have permission to access this page.
                     </p>
                     <button 
                         onClick={() => navigate('/main-dashboard')}

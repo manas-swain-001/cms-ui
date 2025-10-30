@@ -24,14 +24,14 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       label: 'Attendance',
       path: '/attendance-management',
       icon: 'Clock',
-      roles: ['admin', 'manager', 'employee', 'sales', 'field'],
+      roles: ['manager', 'employee', 'sales', 'field'],
       badge: null
     },
     {
       label: 'Tasks',
       path: '/task-compliance-tracking',
       icon: 'CheckSquare',
-      roles: ['admin', 'manager', 'employee'],
+      roles: ['manager', 'employee'],
       badge: null
     },
     {
