@@ -7,9 +7,14 @@ export const endpoint = {
         records: 'attendance/records',
         exportExcel: 'attendance/export-excel'
     },
+    dashboard: {
+        adminOverview: "dashboard/admin-overview",
+        employeesDropdown: "dashboard/employees-dropdown",
+    },
     tasks: {
         completeTasks: "tasks/completed-updates",
         submitUpdate: "tasks/submit-update",
+        tasksHistory: "tasks/history",
     },
     users: {
         getAllUsers: "users",

@@ -15,6 +15,7 @@ import { getUserById } from "api/users";
 import { useMutation } from "@tanstack/react-query";
 import { useGlobalContext } from "context";
 import SmsManagement from "pages/sms";
+import EmployeeTasksTracking from "pages/employee-tasks-tracking";
 
 const Routes = () => {
 
@@ -25,7 +26,8 @@ const Routes = () => {
     { path: '/user-profile-management', component: <UserProfileManagement /> },
     { path: '/task-compliance-tracking', component: <TaskComplianceTracking />, excludedRoles: ['admin'] },
     { path: '/attendance-management', component: <AttendanceManagement />, excludedRoles: ['admin'] },
-
+    
+    { path: '/employee-tasks-tracking', component: <EmployeeTasksTracking />, requiredRole: 'admin' },
     { path: '/control-panel-settings', component: <ControlPanelSettings />, requiredRole: 'admin' },
     { path: '/manage-employees', component: <ManageEmployees />, requiredRole: 'admin' },
     { path: '/sms', component: <SmsManagement />, requiredRole: 'admin' },

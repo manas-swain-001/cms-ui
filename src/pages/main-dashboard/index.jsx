@@ -12,6 +12,8 @@ import QuickActionsPanel from './components/QuickActionsPanel';
 import Icon from '../../components/AppIcon';
 import Header from 'components/ui/Header';
 import { useGlobalContext } from 'context';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardData } from 'api/dashboard';
 
 const MainDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -26,6 +28,14 @@ const MainDashboard = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  const { data: adminOverviewData, isLoading: isAdminOverviewLoading } = useQuery({
+    queryKey: ['adminOverviewData'],
+    queryFn: dashboardData,
+    enabled: userRole === 'admin',
+  });
+
+  console.log('adminOverviewData :::::::: ', adminOverviewData);
 
   // Mock data based on user role
   const getMockData = () => {
@@ -141,17 +151,16 @@ const MainDashboard = () => {
       </Helmet>
       <div className="min-h-screen bg-background">
         <Header />
-        <Sidebar 
-          isCollapsed={isSidebarCollapsed} 
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
-        
-        <main className={`pt-16 transition-all duration-300 ${
-          isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-        }`}>
+
+        <main className={`pt-16 transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          }`}>
           <div className="p-6">
             <Breadcrumb />
-            
+
             {/* Dashboard Header */}
             <div className="mb-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -176,7 +185,7 @@ const MainDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 lg:mt-0">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Icon name="Building2" size={16} />
@@ -191,16 +200,18 @@ const MainDashboard = () => {
             {/* Dashboard Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
               {/* Attendance Widget */}
-              <AttendanceWidget 
-                userRole={userRole} 
-                attendanceData={mockData?.attendance} 
+              <AttendanceWidget
+                userRole={userRole}
+                attendanceData={adminOverviewData?.attendance}
               />
 
               {/* Task Compliance Widget */}
-              <TaskComplianceWidget 
-                userRole={userRole} 
-                taskData={mockData?.tasks} 
-              />
+              {/* {(['admin', 'manager']?.includes(userRole)) && (
+                <TaskComplianceWidget
+                  userRole={userRole}
+                  taskData={mockData?.tasks}
+                />
+              )} */}
 
               {/* Sales Widget - Show for admin, manager, sales */}
               {/* {(['admin', 'manager', 'sales']?.includes(userRole)) && (

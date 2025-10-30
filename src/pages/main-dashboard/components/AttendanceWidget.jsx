@@ -11,31 +11,14 @@ const AttendanceWidget = ({ userRole, attendanceData }) => {
       case 'admin':
         return {
           title: 'Organization Attendance',
-          metrics: [
-            { label: 'Present Today', value: attendanceData?.totalPresent, color: 'text-success' },
-            { label: 'Late Arrivals', value: attendanceData?.lateArrivals, color: 'text-warning' },
-            { label: 'Absent', value: attendanceData?.absent, color: 'text-error' },
-            { label: 'On Leave', value: attendanceData?.onLeave, color: 'text-muted-foreground' }
-          ],
-          showHeatmap: true
         };
       case 'manager':
         return {
           title: 'Team Attendance',
-          metrics: [
-            { label: 'Team Present', value: attendanceData?.teamPresent, color: 'text-success' },
-            { label: 'Pending Approvals', value: attendanceData?.pendingApprovals, color: 'text-warning' }
-          ],
-          showHeatmap: true
         };
       default:
         return {
           title: 'My Attendance',
-          metrics: [
-            { label: 'This Month', value: `${attendanceData?.monthlyPercentage}%`, color: 'text-success' },
-            { label: 'Status', value: attendanceData?.todayStatus, color: attendanceData?.todayStatus === 'Present' ? 'text-success' : 'text-error' }
-          ],
-          showPunchButton: true
         };
     }
   };
@@ -63,42 +46,40 @@ const AttendanceWidget = ({ userRole, attendanceData }) => {
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
-        {roleData?.metrics?.map((metric, index) => (
-          <div key={index} className="text-center">
-            <div className={`text-2xl font-bold ${metric?.color}`}>
-              {metric?.value}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {metric?.label}
-            </div>
+        <div className="text-center">
+          <div className={`text-2xl font-bold text-success`}>
+            {attendanceData?.presentAtOffice || 0}
           </div>
-        ))}
-      </div>
-      {roleData?.showHeatmap && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Weekly Trend</span>
-            <span className="text-xs text-muted-foreground">Last 7 days</span>
-          </div>
-          <div className="flex space-x-1">
-            {[85, 92, 78, 95, 88, 90, 87]?.map((percentage, index) => (
-              <div
-                key={index}
-                className="flex-1 h-2 rounded-full bg-muted relative overflow-hidden"
-              >
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    percentage >= 90 ? 'bg-success' :
-                    percentage >= 75 ? 'bg-warning' : 'bg-error'
-                  }`}
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-            ))}
+          <div className="text-xs text-muted-foreground">
+            {'Present'}
           </div>
         </div>
-      )}
-      {roleData?.showPunchButton && (
+        <div className="text-center">
+          <div className={`text-2xl font-bold text-error`}>
+            {attendanceData?.absent || 0}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {'Absent'}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className={`text-2xl font-bold text-warning`}>
+            {attendanceData?.late || 0}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {'Late'}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className={`text-2xl font-bold text-primary`}>
+            {attendanceData?.workFromHome || 0}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Work From Home
+          </div>
+        </div>
+      </div>
+      {userRole === 'employee' && (
         <Button
           variant="default"
           fullWidth
@@ -120,16 +101,6 @@ const AttendanceWidget = ({ userRole, attendanceData }) => {
           >
             View Details
           </Button>
-          {userRole === 'manager' && attendanceData?.pendingApprovals > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              iconName="CheckSquare"
-              iconPosition="left"
-            >
-              Approvals ({attendanceData?.pendingApprovals})
-            </Button>
-          )}
         </div>
       )}
     </div>

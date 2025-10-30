@@ -19,4 +19,14 @@ const submitUpdate = async (data) => {
     }
 }
 
-export { completeTasks, submitUpdate };
+const getTasksHistory = async (headers) => {
+    try {
+        console.log('headers :::: ', headers);
+        const res = await request().get(endpoint.tasks.tasksHistory, undefined, { ...headers });
+        return res?.data?.tasks || [];
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { completeTasks, submitUpdate, getTasksHistory };

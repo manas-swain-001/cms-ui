@@ -42,6 +42,13 @@ const Sidebar = ({ isCollapsed = false, onToggle }) => {
       badge: null
     },
     {
+      label: 'Tasks Tracking',
+      path: '/employee-tasks-tracking',
+      icon: 'CheckSquare',
+      roles: ['admin'],
+      badge: null
+    },
+    {
       label: 'Profile',
       path: '/user-profile-management',
       icon: 'User',

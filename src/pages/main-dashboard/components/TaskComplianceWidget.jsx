@@ -94,10 +94,10 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
         <div className="space-y-3 mb-4">
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Icon 
-                name={getSlotIcon(taskData?.morningStatus)} 
-                size={16} 
-                className={getSlotColor(taskData?.morningStatus)} 
+              <Icon
+                name={getSlotIcon(taskData?.morningStatus)}
+                size={16}
+                className={getSlotColor(taskData?.morningStatus)}
               />
               <span className="text-sm font-medium">Morning Slot</span>
             </div>
@@ -107,10 +107,10 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
           </div>
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Icon 
-                name={getSlotIcon(taskData?.afternoonStatus)} 
-                size={16} 
-                className={getSlotColor(taskData?.afternoonStatus)} 
+              <Icon
+                name={getSlotIcon(taskData?.afternoonStatus)}
+                size={16}
+                className={getSlotColor(taskData?.afternoonStatus)}
               />
               <span className="text-sm font-medium">Afternoon Slot</span>
             </div>
@@ -120,10 +120,10 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
           </div>
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-3">
-              <Icon 
-                name={getSlotIcon(taskData?.eveningStatus)} 
-                size={16} 
-                className={getSlotColor(taskData?.eveningStatus)} 
+              <Icon
+                name={getSlotIcon(taskData?.eveningStatus)}
+                size={16}
+                className={getSlotColor(taskData?.eveningStatus)}
               />
               <span className="text-sm font-medium">Evening Slot</span>
             </div>
@@ -134,36 +134,13 @@ const TaskComplianceWidget = ({ userRole, taskData }) => {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-4">
-          {roleData?.metrics?.map((metric, index) => (
-            <div key={index} className="text-center">
-              <div className={`text-2xl font-bold ${metric?.color}`}>
-                {metric?.value}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {metric?.label}
-              </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold text-success`}>
+              {'12'}
             </div>
-          ))}
-        </div>
-      )}
-      {roleData?.showGrid && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Weekly Progress</span>
-            <span className="text-xs text-muted-foreground">Last 7 days</span>
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {[95, 88, 92, 85, 90, 87, 93]?.map((percentage, index) => (
-              <div
-                key={index}
-                className={`h-8 rounded flex items-center justify-center text-xs font-medium ${
-                  percentage >= 90 ? 'bg-success text-success-foreground' :
-                  percentage >= 75 ? 'bg-warning text-warning-foreground' : 'bg-error text-error-foreground'
-                }`}
-              >
-                {percentage}%
-              </div>
-            ))}
+            <div className="text-xs text-muted-foreground">
+              {'Completed'}
+            </div>
           </div>
         </div>
       )}
