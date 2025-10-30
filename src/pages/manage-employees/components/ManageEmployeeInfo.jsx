@@ -106,6 +106,16 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
       newErrors.joinDate = 'Join date is required';
     }
 
+    if (!formData?.accNo?.trim()) {
+      newErrors.accNo = 'Account number is required';
+    }
+
+    if (!formData?.salary) {
+      newErrors.salary = 'Salary is required';
+    } else if (isNaN(formData?.salary) || Number(formData?.salary) <= 0) {
+      newErrors.salary = 'Please enter a valid salary amount';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors)?.length === 0;
   };
@@ -330,6 +340,8 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
               type="text"
               value={formData?.accNo || ''}
               onChange={(e) => handleInputChange('accNo', e?.target?.value)}
+              error={errors?.accNo}
+              required
               description="Admin can edit this field"
             />
 
@@ -338,6 +350,8 @@ const ManageEmployeeInfo = ({ userProfile, onUpdateProfile, data }) => {
               type="number"
               value={formData?.salary || ''}
               onChange={(e) => handleInputChange('salary', e?.target?.value)}
+              error={errors?.salary}
+              required
               description="Admin can edit this field"
             />
 

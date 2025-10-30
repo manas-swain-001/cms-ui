@@ -7,6 +7,10 @@ export const endpoint = {
         records: 'attendance/records',
         exportExcel: 'attendance/export-excel'
     },
+    tasks: {
+        completeTasks: "tasks/completed-updates",
+        submitUpdate: "tasks/submit-update",
+    },
     users: {
         getAllUsers: "users",
         saveUser: "users/save",

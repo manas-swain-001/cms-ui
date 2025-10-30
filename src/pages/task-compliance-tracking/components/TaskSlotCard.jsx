@@ -7,39 +7,95 @@ const TaskSlotCard = ({
   slot, 
   onUpdate, 
   isDisabled = false, 
-  userRole = 'employee' 
+  userName = '',
+  isLoading = false,
+  isNewUpdate = false
 }) => {
   const [taskDescription, setTaskDescription] = useState(slot?.description || '');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(isNewUpdate);
 
-  const getSlotConfig = (hour) => {
-    const isSubmitted = slot?.status === 'completed';
+  const getSlotConfig = (scheduledTime, status, isNew) => {
+    let color, bgColor, borderColor;
+    
+    // For new update card
+    if (isNew) {
+      color = 'text-blue-600';
+      bgColor = 'bg-blue-50';
+      borderColor = 'border-blue-300';
+      return {
+        title: 'Add New Update',
+        icon: 'Plus',
+        color,
+        bgColor,
+        borderColor
+      };
+    }
+    
+    // Status colors: submitted=green, warning_sent=yellow, escalated=red
+    if (status === 'submitted') {
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-300';
+    } else if (status === 'warning_sent') {
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-300';
+    } else if (status === 'escalated') {
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-300';
+    } else {
+      color = 'text-gray-600';
+      bgColor = 'bg-gray-50';
+      borderColor = 'border-gray-300';
+    }
     
     return {
-      title: `${hour}:00 Update`,
-      timeWindow: `${hour.toString().padStart(2, '0')}:00 - ${(hour + 1).toString().padStart(2, '0')}:00`,
+      title: `${scheduledTime} Update`,
       icon: 'Clock',
-      color: isSubmitted ? 'text-green-600' : 'text-yellow-600',
-      bgColor: isSubmitted ? 'bg-green-50' : 'bg-yellow-50',
-      borderColor: isSubmitted ? 'border-green-300' : 'border-yellow-300'
+      color,
+      bgColor,
+      borderColor
     };
   };
 
-  const config = getSlotConfig(slot?.hour);
+  const config = getSlotConfig(slot?.scheduledTime, slot?.status, isNewUpdate);
 
   const getStatusBadge = () => {
-    if (slot?.status === 'completed') {
+    if (isNewUpdate) {
+      return (
+        <div className="flex items-center space-x-1 text-primary text-xs font-medium">
+          <Icon name="Edit" size={14} />
+          <span>New Update</span>
+        </div>
+      );
+    }
+    
+    if (slot?.status === 'submitted') {
       return (
         <div className="flex items-center space-x-1 text-success text-xs font-medium">
           <Icon name="CheckCircle" size={14} />
           <span>Submitted</span>
         </div>
       );
+    } else if (slot?.status === 'warning_sent') {
+      return (
+        <div className="flex items-center space-x-1 text-warning text-xs font-medium">
+          <Icon name="AlertTriangle" size={14} />
+          <span>Warning Sent</span>
+        </div>
+      );
+    } else if (slot?.status === 'escalated') {
+      return (
+        <div className="flex items-center space-x-1 text-error text-xs font-medium">
+          <Icon name="AlertCircle" size={14} />
+          <span>Escalated</span>
+        </div>
+      );
     }
     
     return (
-      <div className="flex items-center space-x-1 text-warning text-xs font-medium">
+      <div className="flex items-center space-x-1 text-muted-foreground text-xs font-medium">
         <Icon name="Clock" size={14} />
         <span>Pending</span>
       </div>
@@ -49,27 +105,32 @@ const TaskSlotCard = ({
   const handleSubmit = async () => {
     if (!taskDescription?.trim()) return;
     
-    setIsSubmitting(true);
+    console.log('Description entered:', taskDescription?.trim());
+    
     try {
-      await onUpdate(slot?.hour, taskDescription?.trim());
-      setIsEditing(false);
+      if (isNewUpdate) {
+        // For new update, pass a special identifier
+        await onUpdate('new', taskDescription?.trim());
+      } else {
+        await onUpdate(slot?.scheduledTime, taskDescription?.trim());
+      }
+      setIsEditing(isNewUpdate); // Keep new update card in edit mode
+      setTaskDescription('');
     } catch (error) {
       console.error('Failed to update task:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleEdit = () => {
-    if (slot?.status === 'completed' && userRole !== 'manager' && userRole !== 'admin') {
+    if (slot?.status === 'submitted') {
       return;
     }
     setIsEditing(true);
   };
 
   const canEdit = () => {
-    if (userRole === 'manager' || userRole === 'admin') return true;
-    if (slot?.status === 'completed') return false;
+    if (isNewUpdate) return true; // New update card is always editable
+    if (slot?.status === 'submitted') return false;
     if (isDisabled) return false;
     return true;
   };
@@ -84,7 +145,6 @@ const TaskSlotCard = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">{config?.title}</h3>
-            <p className="text-sm text-muted-foreground">{config?.timeWindow}</p>
           </div>
         </div>
         {getStatusBadge()}
@@ -107,8 +167,8 @@ const TaskSlotCard = ({
                 variant="default"
                 size="sm"
                 onClick={handleSubmit}
-                loading={isSubmitting}
-                disabled={!taskDescription?.trim()}
+                loading={isLoading}
+                disabled={!taskDescription?.trim() || isLoading}
                 iconName="Save"
                 iconPosition="left"
               >
@@ -118,10 +178,16 @@ const TaskSlotCard = ({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setIsEditing(false);
-                  setTaskDescription(slot?.description || '');
+                  if (isNewUpdate) {
+                    // For new update, just clear the description
+                    setTaskDescription('');
+                  } else {
+                    // For existing updates, exit edit mode
+                    setIsEditing(false);
+                    setTaskDescription(slot?.description || '');
+                  }
                 }}
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
@@ -138,16 +204,19 @@ const TaskSlotCard = ({
                   wordBreak: 'break-word'
                 }}>{slot?.description}</p>
               ) : (
-                <p className="text-sm text-muted-foreground italic">No update provided yet</p>
+                <p className="text-sm text-muted-foreground italic">
+                  {isNewUpdate ? 'Click "Add Update" to enter your task description' : 'No update provided yet'}
+                </p>
               )}
             </div>
-            {canEdit() && (
+            {canEdit() && !isNewUpdate && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleEdit}
                 iconName="Edit"
                 iconPosition="left"
+                disabled={isLoading}
               >
                 {slot?.description ? 'Edit Update' : 'Add Update'}
               </Button>
@@ -156,16 +225,16 @@ const TaskSlotCard = ({
         )}
       </div>
       {/* Metadata */}
-      {slot?.updatedAt && (
+      {!isNewUpdate && slot?.submittedAt && (
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
           <div className="flex items-center space-x-1">
             <Icon name="Clock" size={12} />
-            <span>Updated: {new Date(slot.updatedAt)?.toLocaleString()}</span>
+            <span>Updated: {new Date(slot.submittedAt)?.toLocaleString()}</span>
           </div>
-          {slot?.updatedBy && (
+          {userName && (
             <div className="flex items-center space-x-1">
               <Icon name="User" size={12} />
-              <span>By: {slot?.updatedBy}</span>
+              <span>By: {userName}</span>
             </div>
           )}
         </div>
