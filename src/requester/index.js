@@ -2,6 +2,7 @@ import axios from "axios";
 import axiosRetry from "axios-retry";
 import { baseUrl } from "constant";
 import secureStorage from "hooks/secureStorage";
+import { disconnectSocket } from "socket";
 
 const API_BASE_URL = baseUrl || "";
 
@@ -59,6 +60,8 @@ export class AxiosRequester {
                     const { status, data } = error.response;
                     // Example: handle 401 Unauthorized
                     if (status === 401) {
+                        // Disconnect socket when authentication fails
+                        disconnectSocket();
                         secureStorage.clear();
                         // window.location.href = "/login-authentication"; // redirect if needed
                     }

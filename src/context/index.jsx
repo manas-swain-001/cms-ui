@@ -1,7 +1,9 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import useAttendance from "./useAttendance";
 import secureStorage from "hooks/secureStorage";
 import useProfileContext from "./useProfileContext";
+import useNotifications from "./useNotifications";
+import { initSocket } from "socket";
 
 const GlobalContext = createContext(null);
 
@@ -18,6 +20,16 @@ export const GlobalContextProvider = ({ children }) => {
     // Attendance context
     const attendance = useAttendance();
     const profile = useProfileContext();
+    const notifications = useNotifications();
+
+    // Initialize socket automatically when context provider mounts if user is authenticated
+    useEffect(() => {
+        const token = secureStorage.getItem('authToken');
+        if (token) {
+            console.log('🚀 Auto-initializing socket connection on app start...');
+            initSocket();
+        }
+    }, []);
 
     return (
         <GlobalContext.Provider value={{
@@ -28,7 +40,8 @@ export const GlobalContextProvider = ({ children }) => {
             setUserRoleContext,
             setUserDataContext,
             ...attendance,
-            ...profile
+            ...profile,
+            ...notifications
         }}>
             {children}
         </GlobalContext.Provider>

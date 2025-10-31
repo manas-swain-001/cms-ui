@@ -15,6 +15,9 @@ function App() {
     }
   })
 
+  // Socket initialization is now handled inside GlobalContextProvider
+  // This ensures proper coordination with notifications hook
+
   return (
     <GlobalContextProvider>
       <QueryClientProvider client={queryClient}>

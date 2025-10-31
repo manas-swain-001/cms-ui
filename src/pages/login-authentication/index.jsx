@@ -10,6 +10,7 @@ import { login } from 'api/login';
 import { toast } from 'react-toastify';
 import { useGlobalContext } from 'context';
 import secureStorage from 'hooks/secureStorage';
+import { initSocket } from 'socket';
 
 const LoginAuthentication = () => {
   const [showBiometric, setShowBiometric] = useState(false);
@@ -55,6 +56,9 @@ const LoginAuthentication = () => {
       setUserDataContext(user);
       setUserRoleContext(user?.role);
       setIsLoggedIn(true);
+
+      // Initialize socket connection after successful login
+      initSocket();
 
       setAuthStep('success');
 
@@ -114,6 +118,9 @@ const LoginAuthentication = () => {
       setUserDataContext(authData?.user);
       setUserRoleContext(authData?.user?.role);
       setIsLoggedIn(true);
+
+      // Initialize socket connection after successful biometric login
+      initSocket();
 
       setAuthStep('success');
 

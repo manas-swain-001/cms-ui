@@ -4,6 +4,7 @@ import Icon from 'components/AppIcon';
 import Button from '../Button';
 import { useGlobalContext } from 'context';
 import secureStorage from 'hooks/secureStorage';
+import { disconnectSocket } from 'socket';
 
 const offices = [
     { id: 1, name: 'Bhubaneswar Office', address: 'Bhubaneswar', status: 'active' },
@@ -15,7 +16,6 @@ const Header = () => {
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [selectedOffice, setSelectedOffice] = useState('Bhubaneswar Office');
-    const [notificationCount, setNotificationCount] = useState(3);
 
     const officeDropdownRef = useRef(null);
     const userDropdownRef = useRef(null);
@@ -23,35 +23,23 @@ const Header = () => {
 
     const navigate = useNavigate();
 
-    // Global context
-    const { setIsLoggedIn, userDataContext: user, userProfile } = useGlobalContext();
+    // Global context - Must be destructured BEFORE using its values
+    const { 
+        setIsLoggedIn, 
+        userDataContext: user, 
+        userProfile,
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead
+    } = useGlobalContext();
 
-    const notifications = [
-        {
-            id: 1,
-            type: 'attendance',
-            title: 'Attendance Alert',
-            message: '5 employees are late for check-in',
-            time: '2 minutes ago',
-            unread: true
-        },
-        {
-            id: 2,
-            type: 'task',
-            title: 'Task Compliance',
-            message: 'Development team has 3 overdue tasks',
-            time: '15 minutes ago',
-            unread: true
-        },
-        {
-            id: 3,
-            type: 'system',
-            title: 'System Update',
-            message: 'Biometric system maintenance scheduled',
-            time: '1 hour ago',
-            unread: false
-        }
-    ];
+    // Use real notification count from context, fallback to 0
+    const notificationCount = unreadCount || 0;
+
+    // Use notifications from global context (populated from socket)
+    // Fallback to empty array if not available
+    const displayNotifications = notifications || [];
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -99,8 +87,9 @@ const Header = () => {
     };
 
     const handleNotificationClick = (notification) => {
-        if (notification?.unread) {
-            setNotificationCount(prev => Math.max(0, prev - 1));
+        // Mark notification as read when clicked
+        if (notification?.id && markAsRead) {
+            markAsRead(notification.id);
         }
         setIsNotificationOpen(false);
     };
@@ -115,6 +104,9 @@ const Header = () => {
     };
 
     const handleSignOut = () => {
+        // Disconnect socket before logging out
+        disconnectSocket();
+        
         secureStorage.removeItem('authToken');
         secureStorage.removeItem('userData');
         secureStorage.removeItem('userRole');
@@ -202,40 +194,76 @@ const Header = () => {
                                     </div>
                                 </div>
                                 <div className="max-h-80 overflow-y-auto">
-                                    {notifications?.map((notification) => (
-                                        <button
-                                            key={notification?.id}
-                                            onClick={() => handleNotificationClick(notification)}
-                                            className={`w-full p-4 text-left hover:bg-muted transition-colors duration-200 border-b border-border last:border-b-0 ${notification?.unread ? 'bg-muted/50' : ''
-                                                }`}
-                                        >
-                                            <div className="flex items-start space-x-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${notification?.type === 'attendance' ? 'bg-warning/10 text-warning' :
-                                                    notification?.type === 'task' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                                                    }`}>
-                                                    <Icon name={getNotificationIcon(notification?.type)} size={14} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between">
-                                                        <p className="text-sm font-medium text-foreground truncate">
-                                                            {notification?.title}
-                                                        </p>
-                                                        {notification?.unread && (
-                                                            <div className="w-2 h-2 bg-primary rounded-full ml-2" />
-                                                        )}
+                                    {displayNotifications?.length > 0 ? (
+                                        displayNotifications?.slice(0, 10).map((notification) => {
+                                            // Format timestamp
+                                            const formatTime = (timestamp) => {
+                                                if (!timestamp) return 'Just now';
+                                                const date = new Date(timestamp);
+                                                const now = new Date();
+                                                const diffMs = now - date;
+                                                const diffMins = Math.floor(diffMs / 60000);
+                                                const diffHours = Math.floor(diffMins / 60);
+                                                
+                                                if (diffMins < 1) return 'Just now';
+                                                if (diffMins < 60) return `${diffMins}m ago`;
+                                                if (diffHours < 24) return `${diffHours}h ago`;
+                                                return date.toLocaleDateString();
+                                            };
+                                            
+                                            return (
+                                                <button
+                                                    key={notification?.id}
+                                                    onClick={() => handleNotificationClick(notification)}
+                                                    className={`w-full p-4 text-left hover:bg-muted transition-colors duration-200 border-b border-border last:border-b-0 ${!notification?.read ? 'bg-muted/50' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${notification?.type === 'attendance' ? 'bg-warning/10 text-warning' :
+                                                            notification?.type === 'task' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                                                            }`}>
+                                                            <Icon name={getNotificationIcon(notification?.type)} size={14} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="text-sm font-medium text-foreground truncate">
+                                                                    {notification?.title}
+                                                                </p>
+                                                                {!notification?.read && (
+                                                                    <div className="w-2 h-2 bg-primary rounded-full ml-2" />
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground mt-1">{notification?.message}</p>
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {formatTime(notification?.timestamp)}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <p className="text-sm text-muted-foreground mt-1">{notification?.message}</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">{notification?.time}</p>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))}
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="p-4 text-center text-muted-foreground text-sm">
+                                            No notifications
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="p-3 border-t border-border">
-                                    <Button variant="ghost" size="sm" fullWidth>
-                                        View all notifications
-                                    </Button>
-                                </div>
+                                {displayNotifications?.length > 0 && (
+                                    <div className="p-3 border-t border-border">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            fullWidth
+                                            onClick={() => {
+                                                if (markAllAsRead) {
+                                                    markAllAsRead();
+                                                }
+                                            }}
+                                        >
+                                            Mark all as read
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
