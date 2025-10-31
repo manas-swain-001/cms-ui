@@ -4,10 +4,39 @@ import { getSocket } from "socket";
 
 const NOTIFICATIONS_STORAGE_KEY = 'notifications';
 const MAX_NOTIFICATIONS = 100; // Limit stored notifications
+const NOTIFICATION_SOUND_PATH = '/notification-sound.mp3';
+
+/**
+ * Play notification sound
+ * Handles browser autoplay policies gracefully
+ * @param {boolean} enabled - Whether sound is enabled (defaults to true)
+ */
+const playNotificationSound = (enabled = true) => {
+    if (!enabled) return;
+    
+    try {
+        const audio = new Audio(NOTIFICATION_SOUND_PATH);
+        audio.volume = 0.5; // Set volume to 50%
+        audio.play().catch(error => {
+            // Browser may block autoplay, but we'll still show the notification
+            console.warn('⚠️ Could not play notification sound:', error.message);
+        });
+    } catch (error) {
+        console.warn('⚠️ Error creating audio element:', error);
+    }
+};
+
+const SOUND_ENABLED_KEY = 'notificationSoundEnabled';
 
 export default function useNotifications() {
     // Load notifications from localStorage on mount
     const storedNotifications = secureStorage.getItem(NOTIFICATIONS_STORAGE_KEY) || [];
+    
+    // Load sound preference (defaults to true/enabled)
+    const storedSoundEnabled = secureStorage.getItem(SOUND_ENABLED_KEY);
+    const [soundEnabled, setSoundEnabledState] = useState(
+        storedSoundEnabled !== null ? storedSoundEnabled : true
+    );
     
     const [notifications, setNotifications] = useState(storedNotifications);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -77,6 +106,19 @@ export default function useNotifications() {
         secureStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
     }, []);
 
+    // Toggle notification sound on/off
+    const toggleSound = useCallback(() => {
+        const newSoundState = !soundEnabled;
+        setSoundEnabledState(newSoundState);
+        secureStorage.setItem(SOUND_ENABLED_KEY, newSoundState);
+        return newSoundState;
+    }, [soundEnabled]);
+
+    // Test notification sound (for settings/preferences)
+    const testSound = useCallback(() => {
+        playNotificationSound(soundEnabled);
+    }, [soundEnabled]);
+
     // Setup socket listener for notifications
     useEffect(() => {
         const handleNotification = (notification) => {
@@ -99,7 +141,14 @@ export default function useNotifications() {
                 return;
             }
             
+            // Add notification to state
             addNotification(notification);
+            
+            // Play notification sound
+            // Only play if notification is not marked as read (defaults to false) and sound is enabled
+            if (!notification.read && soundEnabled) {
+                playNotificationSound(true);
+            }
         };
 
         // Function to setup listener on socket
@@ -161,7 +210,7 @@ export default function useNotifications() {
                 currentSocket.off('connect', connectHandler);
             }
         };
-    }, [addNotification]);
+    }, [addNotification, soundEnabled]);
 
     return {
         notifications,
@@ -171,7 +220,10 @@ export default function useNotifications() {
         markAllAsRead,
         removeNotification,
         clearAll,
-        setNotifications
+        setNotifications,
+        soundEnabled,
+        toggleSound,
+        testSound
     };
 }
 
