@@ -37,6 +37,15 @@ const getRecords = async (headers) => {
     }
 }
 
+const attendanceHistory = async () => {
+    try {
+        const res = await request().get(endpoint.attendance.attendanceHistory);
+        return res?.data || [];
+    } catch (error) {
+        throw error;
+    }
+}
+
 const exportExcel = async (headers) => {
     try {
         const requester = request({ responseType: 'blob' });
@@ -49,4 +58,4 @@ const exportExcel = async (headers) => {
 
 
 
-export { punchIn, punchOut, getCurrentStatus, getRecords, exportExcel };
+export { punchIn, punchOut, getCurrentStatus, getRecords, exportExcel, attendanceHistory };

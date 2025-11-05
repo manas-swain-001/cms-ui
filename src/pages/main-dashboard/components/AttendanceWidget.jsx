@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { useGlobalContext } from 'context';
 
 const AttendanceWidget = ({ userRole, attendanceData }) => {
   const navigate = useNavigate();
+
+  const { setViewDetailsContext } = useGlobalContext();
 
   const getRoleSpecificData = () => {
     switch (userRole) {
@@ -97,7 +100,9 @@ const AttendanceWidget = ({ userRole, attendanceData }) => {
             size="sm"
             iconName="Users"
             iconPosition="left"
-            onClick={() => navigate('/attendance-management')}
+            onClick={() => {
+              setViewDetailsContext(true)
+            }}
           >
             View Details
           </Button>

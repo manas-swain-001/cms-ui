@@ -5,7 +5,8 @@ export const endpoint = {
     getCurrentStatus: "attendance/today",
     attendance: {
         records: 'attendance/records',
-        exportExcel: 'attendance/export-excel'
+        exportExcel: 'attendance/export-excel',
+        attendanceHistory: "attendance/history-details",
     },
     dashboard: {
         adminOverview: "dashboard/admin-overview",

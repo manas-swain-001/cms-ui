@@ -17,6 +17,8 @@ export const GlobalContextProvider = ({ children }) => {
     const [userRoleContext, setUserRoleContext] = useState(userRole);
     const [isLoggedIn, setIsLoggedIn] = useState(isLogggedIn);
 
+    const [viewDetailsContext, setViewDetailsContext] = useState(false);
+
     // Attendance context
     const attendance = useAttendance();
     const profile = useProfileContext();
@@ -33,12 +35,10 @@ export const GlobalContextProvider = ({ children }) => {
 
     return (
         <GlobalContext.Provider value={{
-            isLoggedIn,
-            setIsLoggedIn,
-            userDataContext,
-            userRoleContext,
-            setUserRoleContext,
-            setUserDataContext,
+            isLoggedIn, setIsLoggedIn,
+            userDataContext, setUserDataContext,
+            userRoleContext, setUserRoleContext,
+            viewDetailsContext, setViewDetailsContext,
             ...attendance,
             ...profile,
             ...notifications

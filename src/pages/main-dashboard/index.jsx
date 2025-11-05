@@ -14,11 +14,15 @@ import Header from 'components/ui/Header';
 import { useGlobalContext } from 'context';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardData } from 'api/dashboard';
+import { attendanceHistory } from 'api/attendance';
+import Table from 'components/Table';
+import Badge from 'components/Badge';
+import Button from 'components/ui/Button';
 
 const MainDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { userRoleContext: userRole } = useGlobalContext();
+  const { userRoleContext: userRole, viewDetailsContext, setViewDetailsContext } = useGlobalContext();
 
   // Update current time every minute
   useEffect(() => {
@@ -35,7 +39,13 @@ const MainDashboard = () => {
     enabled: userRole === 'admin',
   });
 
-  console.log('adminOverviewData :::::::: ', adminOverviewData);
+  const { data: AttendanceHistory, isLoading: isAttendanceHistoryLoading } = useQuery({
+    queryKey: ['attendanceHistory'],
+    queryFn: attendanceHistory,
+    enabled: userRole === 'admin',
+  });
+
+  console.log('AttendanceHistory :::: ', AttendanceHistory);
 
   // Mock data based on user role
   const getMockData = () => {
@@ -143,6 +153,31 @@ const MainDashboard = () => {
     }
   };
 
+  const columns = [
+    {
+      header: 'Name',
+      key: 'fullName',
+    },
+    {
+      header: 'Check In At',
+      key: 'checkInAt',
+    },
+    {
+      header: 'Status',
+      key: 'status',
+      render: (cell) => {
+        return <Badge
+          title={'status'}
+          color={cell === 'present' ? 'success' : cell === 'absent' ? 'danger' : 'default'}
+        />
+      }
+    },
+    {
+      header: 'Late Minute',
+      key: 'lateMinute',
+    }
+  ];
+
   return (
     <>
       <Helmet>
@@ -196,67 +231,89 @@ const MainDashboard = () => {
                 </div>
               </div>
             </div>
+            {!viewDetailsContext ?
+              <>
+                {/* Dashboard Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                  {/* Attendance Widget */}
+                  <AttendanceWidget
+                    userRole={userRole}
+                    attendanceData={adminOverviewData?.attendance}
+                  />
 
-            {/* Dashboard Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-              {/* Attendance Widget */}
-              <AttendanceWidget
-                userRole={userRole}
-                attendanceData={adminOverviewData?.attendance}
-              />
-
-              {/* Task Compliance Widget */}
-              {/* {(['admin', 'manager']?.includes(userRole)) && (
+                  {/* Task Compliance Widget */}
+                  {/* {(['admin', 'manager']?.includes(userRole)) && (
                 <TaskComplianceWidget
                   userRole={userRole}
                   taskData={mockData?.tasks}
                 />
               )} */}
 
-              {/* Sales Widget - Show for admin, manager, sales */}
-              {/* {(['admin', 'manager', 'sales']?.includes(userRole)) && (
+                  {/* Sales Widget - Show for admin, manager, sales */}
+                  {/* {(['admin', 'manager', 'sales']?.includes(userRole)) && (
                 <SalesWidget 
                   userRole={userRole} 
                   salesData={mockData?.sales} 
                 />
               )} */}
 
-              {/* Field Visit Widget - Show for admin, manager, field */}
-              {/* {(['admin', 'manager', 'field']?.includes(userRole)) && (
+                  {/* Field Visit Widget - Show for admin, manager, field */}
+                  {/* {(['admin', 'manager', 'field']?.includes(userRole)) && (
                 <FieldVisitWidget 
                   userRole={userRole} 
                   fieldData={mockData?.field} 
                 />
               )} */}
 
-              {/* System Health Widget - Admin only */}
-              {/* <SystemHealthWidget userRole={userRole} /> */}
-            </div>
+                  {/* System Health Widget - Admin only */}
+                  {/* <SystemHealthWidget userRole={userRole} /> */}
+                </div>
 
-            {/* Bottom Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Notifications Panel */}
-              {/* <NotificationPanel userRole={userRole} /> */}
+                {/* Bottom Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Notifications Panel */}
+                  {/* <NotificationPanel userRole={userRole} /> */}
 
-              {/* Quick Actions Panel */}
-              {/* <QuickActionsPanel userRole={userRole} /> */}
-            </div>
+                  {/* Quick Actions Panel */}
+                  {/* <QuickActionsPanel userRole={userRole} /> */}
+                </div>
 
-            {/* Footer Info */}
-            <div className="mt-8 pt-6 border-t border-border">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
-                <div className="flex items-center space-x-4">
-                  <span>Last updated: {formatTime(currentTime)}</span>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                    <span>Real-time sync active</span>
+                {/* Footer Info */}
+                {/* <div className="mt-8 pt-6 border-t border-border">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-4">
+                      <span>Last updated: {formatTime(currentTime)}</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                        <span>Real-time sync active</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:mt-0">
+                      <span>© {new Date()?.getFullYear()} SmartXAlgo CRM. All rights reserved.</span>
+                    </div>
                   </div>
+                </div> */}
+              </>
+              : <>
+                <Table
+                  data={AttendanceHistory ?? []}
+                  columns={columns}
+                  className="border-0 rounded-none"
+                />
+                <div className="flex space-x-2 mt-4 float-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className='bg-red-400 text-white'
+                    onClick={() => {
+                      setViewDetailsContext(false)
+                    }}
+                  >
+                    Close
+                  </Button>
                 </div>
-                <div className="mt-2 sm:mt-0">
-                  <span>© {new Date()?.getFullYear()} SmartXAlgo CRM. All rights reserved.</span>
-                </div>
-              </div>
-            </div>
+              </>
+            }
           </div>
         </main>
       </div>
