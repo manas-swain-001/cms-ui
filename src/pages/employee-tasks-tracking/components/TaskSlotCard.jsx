@@ -13,6 +13,11 @@ const TaskSlotCard = ({
 }) => {
   const [taskDescription, setTaskDescription] = useState(slot?.description || '');
   const [isEditing, setIsEditing] = useState(isNewUpdate);
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Ref to check if text is truncated
+  const textRef = React.useRef(null);
+  const [needsExpansion, setNeedsExpansion] = useState(false);
 
   const getSlotConfig = (scheduledTime, status, isNew) => {
     let color, bgColor, borderColor;
@@ -135,6 +140,27 @@ const TaskSlotCard = ({
     return true;
   };
 
+  // Check if text is truncated and needs expand button
+  useEffect(() => {
+    if (!isEditing && slot?.description && textRef.current) {
+      // Reset expansion state when description changes
+      setIsExpanded(false);
+      
+      // Use setTimeout to ensure DOM is updated and styles are applied
+      setTimeout(() => {
+        const element = textRef.current;
+        if (element) {
+          // Check if text is actually truncated (scrollHeight > clientHeight)
+          // This works when text is collapsed (has line-clamp applied)
+          const isTruncated = element.scrollHeight > element.clientHeight;
+          setNeedsExpansion(isTruncated);
+        }
+      }, 100);
+    } else {
+      setNeedsExpansion(false);
+    }
+  }, [isEditing, slot?.description]);
+
   return (
     <div className={`bg-card border-2 ${config?.borderColor} rounded-lg p-6 transition-all duration-200 hover:shadow-md`}>
       {/* Header */}
@@ -197,12 +223,33 @@ const TaskSlotCard = ({
           <div className="space-y-3">
             <div className="min-h-[100px] p-4 bg-muted rounded-lg">
               {slot?.description ? (
-                <p className="text-sm text-foreground overflow-hidden" style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 4,
-                  WebkitBoxOrient: 'vertical',
-                  wordBreak: 'break-word'
-                }}>{slot?.description}</p>
+                <>
+                  <p 
+                    ref={textRef}
+                    className="text-sm text-foreground word-break break-words whitespace-pre-wrap"
+                    style={!isExpanded ? {
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word'
+                    } : {
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap'
+                    }}
+                  >
+                    {slot?.description}
+                  </p>
+                  {(needsExpansion || isExpanded) && (
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="mt-2 text-xs font-medium text-primary hover:text-primary/80 flex items-center space-x-1 transition-colors"
+                    >
+                      <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={14} />
+                      <span>{isExpanded ? 'Show Less' : 'Read More'}</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground italic">
                   {isNewUpdate ? 'Click "Add Update" to enter your task description' : 'No update provided yet'}
