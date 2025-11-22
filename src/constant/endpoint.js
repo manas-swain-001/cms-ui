@@ -16,6 +16,7 @@ export const endpoint = {
         completeTasks: "tasks/completed-updates",
         submitUpdate: "tasks/submit-update",
         tasksHistory: "tasks/history",
+        exportExcel: "tasks/export-excel",
     },
     users: {
         getAllUsers: "users",

@@ -9,8 +9,9 @@ import ComplianceStats from './components/ComplianceStats';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
+import Input from '../../components/ui/Input';
 import Header from 'components/ui/Header';
-import { completeTasks, getTasksHistory, submitUpdate } from 'api/tasks';
+import { completeTasks, getTasksHistory, submitUpdate, exportTasksExcel } from 'api/tasks';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useGlobalContext } from 'context';
 import { toast } from 'react-toastify';
@@ -26,6 +27,15 @@ const EmployeeTasksTracking = () => {
   const [scrollPosition, setScrollPosition] = useState({ left: 0, right: 0 });
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [tasksHistoryData, setTasksHistoryData] = useState([]);
+  const [fromDate, setFromDate] = useState(() => {
+    const date = new Date();
+    return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  });
+  const [toDate, setToDate] = useState(() => {
+    const date = new Date();
+    return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  });
+  const [isExporting, setIsExporting] = useState(false);
 
   const { userDataContext, userRoleContext: userRole } = useGlobalContext();
 
@@ -217,6 +227,62 @@ const EmployeeTasksTracking = () => {
     label: emp.name
   })) || [];
 
+  // Handle export
+  const handleExport = async () => {
+    if (!selectedEmployee) {
+      toast.error('Please select an employee first');
+      return;
+    }
+
+    if (!fromDate || !toDate) {
+      toast.error('Please select both from date and to date');
+      return;
+    }
+
+    const fromDateObj = new Date(fromDate);
+    const toDateObj = new Date(toDate);
+
+    if (toDateObj < fromDateObj) {
+      toast.error('To date cannot be before from date');
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      
+      const headers = {
+        'start-date': formatDateToDDMMYYYY(fromDateObj),
+        'end-date': formatDateToDDMMYYYY(toDateObj),
+        'user-id': selectedEmployee
+      };
+
+      const blob = await exportTasksExcel(headers);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename
+      const fileName = `Task_Updates_${formatDateToDDMMYYYY(fromDateObj).replace(/\//g, '-')}_to_${formatDateToDDMMYYYY(toDateObj).replace(/\//g, '-')}.xlsx`;
+      link.setAttribute('download', fileName);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(error?.message || 'Failed to export task updates');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -235,29 +301,98 @@ const EmployeeTasksTracking = () => {
               <h1 className="text-3xl font-bold text-foreground">Employee Tasks Tracking</h1>
             </div>
 
-            {/* Employee Dropdown */}
+            {/* Employee Dropdown and Date Range */}
             {userRole === 'admin' && (
-              <div className="w-full sm:w-64">
-                <Select
-                  options={employeeOptions}
-                  value={selectedEmployee}
-                  onChange={(value) => {
-                    GetTasksHistory({
-                      'user-id': value,
-                      'page': 1,
-                      'limit': 10,
-                      'start-date': formatDateToDDMMYYYY(selectedDate),
-                      'end-date': formatDateToDDMMYYYY(selectedDate),
-                    })
-                    setSelectedEmployee(value)
-                  }
-                  }
-                  placeholder="Select from list"
-                  className="w-full"
-                />
+              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <div className="w-full sm:w-64">
+                  <Select
+                    options={employeeOptions}
+                    value={selectedEmployee}
+                    onChange={(value) => {
+                      GetTasksHistory({
+                        'user-id': value,
+                        'page': 1,
+                        'limit': 10,
+                        'start-date': formatDateToDDMMYYYY(new Date(fromDate)),
+                        'end-date': formatDateToDDMMYYYY(new Date(toDate)),
+                      })
+                      setSelectedEmployee(value)
+                    }
+                    }
+                    placeholder="Select from list"
+                    className="w-full"
+                  />
+                </div>
               </div>
             )}
           </div>
+
+          {/* Date Range and Download Section */}
+          {userRole === 'admin' && selectedEmployee && (
+            <div className="bg-card border border-border rounded-lg p-6 mb-6">
+              <div className="flex flex-col md:flex-row md:items-end gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="w-full sm:w-48">
+                    <Input
+                      label="From Date"
+                      type="date"
+                      value={fromDate}
+                      onChange={(e) => {
+                        setFromDate(e.target.value);
+                        if (selectedEmployee) {
+                          GetTasksHistory({
+                            'user-id': selectedEmployee,
+                            'page': 1,
+                            'limit': 10,
+                            'start-date': formatDateToDDMMYYYY(new Date(e.target.value)),
+                            'end-date': formatDateToDDMMYYYY(new Date(toDate)),
+                          });
+                        }
+                      }}
+                      max={toDate}
+                    />
+                  </div>
+                  <div className="w-full sm:w-48">
+                    <Input
+                      label="To Date"
+                      type="date"
+                      value={toDate}
+                      onChange={(e) => {
+                        setToDate(e.target.value);
+                        if (selectedEmployee) {
+                          GetTasksHistory({
+                            'user-id': selectedEmployee,
+                            'page': 1,
+                            'limit': 10,
+                            'start-date': formatDateToDDMMYYYY(new Date(fromDate)),
+                            'end-date': formatDateToDDMMYYYY(new Date(e.target.value)),
+                          });
+                        }
+                      }}
+                      min={fromDate}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    onClick={handleExport}
+                    disabled={isExporting || !selectedEmployee || !fromDate || !toDate}
+                    className="flex items-center gap-2 whitespace-nowrap"
+                    iconName={isExporting ? null : "FileSpreadsheet"}
+                  >
+                    {isExporting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Exporting...</span>
+                      </>
+                    ) : (
+                      <span>Download Report</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Content */}
           {activeTab === 'personal' ? (
             <div className="w-full space-y-6">
@@ -310,7 +445,7 @@ const EmployeeTasksTracking = () => {
                           ))
                         ) : (
                           <div className="w-full flex items-center justify-center py-12 text-muted-foreground">
-                            No task updates found for the selected employee
+                            No task updates found for the selected date range
                           </div>
                         )}
                       </div>

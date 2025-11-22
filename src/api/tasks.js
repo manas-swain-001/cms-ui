@@ -29,4 +29,14 @@ const getTasksHistory = async (headers) => {
     }
 }
 
-export { completeTasks, submitUpdate, getTasksHistory };
+const exportTasksExcel = async (headers) => {
+    try {
+        const requester = request({ responseType: 'blob' });
+        const res = await requester.get(endpoint.tasks.exportExcel, undefined, { ...headers });
+        return res;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { completeTasks, submitUpdate, getTasksHistory, exportTasksExcel };
